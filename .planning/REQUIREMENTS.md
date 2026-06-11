@@ -9,11 +9,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Pall-Ex API Integration
 
-- [ ] **API-01**: System authenticates with the Pall-Ex Nexus API and manages the token lifecycle automatically (bearer 1h / refresh 24h, single-flight refresh — no expired-token failures under concurrent calls)
+- [x] **API-01
+**: System authenticates with the Pall-Ex Nexus API and manages the token lifecycle automatically (bearer 1h / refresh 24h, single-flight refresh — no expired-token failures under concurrent calls)
 - [ ] **API-02**: System can look up a consignment by tracking number / customer reference via `GET/Consignments` searchTerm
 - [ ] **API-03**: System verifies the user-supplied postcode against `delAddressPostcode` before revealing delivery details
 - [ ] **API-04**: System maps raw `status.name` values to a plain-language status, description, and a 5-stage milestone (Booked → At Hub → In Transit → Out for Delivery → Delivered)
-- [ ] **API-05**: System degrades gracefully on Pall-Ex API downtime (timeouts, circuit breaker, channel-appropriate fallback messages — never raw errors)
+- [x] **API-05
+**: System degrades gracefully on Pall-Ex API downtime (timeouts, circuit breaker, channel-appropriate fallback messages — never raw errors)
 - [x] **API-06
 **: System has a mock mode replicating the Nexus spec so all development works before real credentials arrive
 - [ ] **API-07**: Every tracking lookup is logged with its outcome (found / not found / postcode mismatch / API error) to power success metrics
