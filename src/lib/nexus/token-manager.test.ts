@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createTokenManager, type TokenStore, type TokenManagerConfig } from './token-manager';
+import { createTokenManager, type TokenStore, type TokenManagerConfig, type HttpPost } from './token-manager';
 
 // Fake token store backed by an in-memory map
 function makeFakeStore(): TokenStore & { data: Map<string, string> } {
@@ -23,12 +23,13 @@ const testConfig: TokenManagerConfig = {
 
 describe('Token Manager', () => {
   let store: ReturnType<typeof makeFakeStore>;
-  let loginSpy: ReturnType<typeof vi.fn>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let loginSpy: any;
   let tokenManager: ReturnType<typeof createTokenManager>;
 
   beforeEach(() => {
     store = makeFakeStore();
-    loginSpy = vi.fn().mockResolvedValue({
+    loginSpy = vi.fn<HttpPost>().mockResolvedValue({
       bearerToken: 'test-bearer',
       refreshToken: 'test-refresh',
     });
