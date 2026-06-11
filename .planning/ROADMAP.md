@@ -28,7 +28,12 @@
   3. Simulated Nexus downtime (5xx, timeout) triggers the circuit breaker and returns a graceful fallback response — never a raw error
   4. Under concurrent simulated requests, token refresh fires exactly once; no request receives a 401 due to a race condition
   5. Every lookup (found, not found, postcode mismatch, API error) produces a log entry with outcome — queryable from the database
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 01-01-PLAN.md — Scaffold Next.js 15 app, shared types, validated env + mock switch (API-06)
+- [ ] 01-02-PLAN.md — Nexus client: single-flight token lifecycle, circuit breaker, MSW mock (API-01, API-05, API-06)
+- [ ] 01-03-PLAN.md — Supabase schema (portal_lookups/calls/drivers) + lookup-logging repository (API-07)
+- [ ] 01-04-PLAN.md — Tracking service: lookup + postcode gate + status mapping + outcome logging (API-02, API-03, API-04)
 
 ### Phase 2: Tracking Portal
 **Goal**: A customer can look up their delivery status on a mobile phone using a tracking number and postcode, and see all relevant delivery information with clear handling of every error state
@@ -76,7 +81,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 0/4 | Planned | - |
 | 2. Tracking Portal | 0/? | Not started | - |
 | 3. Admin Dashboard | 0/? | Not started | - |
 | 4. Voice Agent + Production | 0/? | Not started | - |
