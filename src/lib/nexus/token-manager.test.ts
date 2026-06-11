@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createTokenManager, type TokenStore } from './token-manager';
+import { createTokenManager, type TokenStore, type TokenManagerConfig } from './token-manager';
 
 // Fake token store backed by an in-memory map
 function makeFakeStore(): TokenStore & { data: Map<string, string> } {
@@ -15,6 +15,12 @@ function makeFakeStore(): TokenStore & { data: Map<string, string> } {
   };
 }
 
+// Test config — no env required
+const testConfig: TokenManagerConfig = {
+  getLoginUrl: () => 'https://mock.nexus.test/Account/login',
+  getCredentials: () => ({ username: 'test-user', password: 'test-pass' }),
+};
+
 describe('Token Manager', () => {
   let store: ReturnType<typeof makeFakeStore>;
   let loginSpy: ReturnType<typeof vi.fn>;
@@ -26,11 +32,11 @@ describe('Token Manager', () => {
       bearerToken: 'test-bearer',
       refreshToken: 'test-refresh',
     });
-    tokenManager = createTokenManager(store, loginSpy);
+    tokenManager = createTokenManager(store, loginSpy, testConfig);
   });
 
   it('triggers exactly ONE login call when 5 concurrent getToken() calls are made with empty cache', async () => {
-    // Slow down the login to ensure overlap
+    // Slow down the login to ensure concurrent callers overlap
     loginSpy.mockImplementation(
       () =>
         new Promise<{ bearerToken: string; refreshToken: string }>((resolve) =>
@@ -66,7 +72,7 @@ describe('Token Manager', () => {
   });
 
   it('performs a new login when the bearer is absent, and caches the new tokens', async () => {
-    // Ensure store is empty (no bearer, no refresh)
+    // Store is empty — no bearer, no refresh
     const token = await tokenManager.getToken();
 
     expect(loginSpy).toHaveBeenCalledTimes(1);
@@ -84,9 +90,9 @@ describe('Token Manager', () => {
     const refreshCall = setSpy.mock.calls.find(([key]) => key === 'nexus:refresh');
 
     expect(bearerCall).toBeDefined();
-    expect(bearerCall![2]).toBe(3300);  // 55 minutes
+    expect(bearerCall![2]).toBe(3300);  // 55 * 60 — 55 minutes
 
     expect(refreshCall).toBeDefined();
-    expect(refreshCall![2]).toBe(82800); // 23 hours
+    expect(refreshCall![2]).toBe(82800); // 23 * 60 * 60 — 23 hours
   });
 });
