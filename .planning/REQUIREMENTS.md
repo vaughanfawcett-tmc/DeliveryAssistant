@@ -14,7 +14,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **API-03**: System verifies the user-supplied postcode against `delAddressPostcode` before revealing delivery details
 - [ ] **API-04**: System maps raw `status.name` values to a plain-language status, description, and a 5-stage milestone (Booked → At Hub → In Transit → Out for Delivery → Delivered)
 - [ ] **API-05**: System degrades gracefully on Pall-Ex API downtime (timeouts, circuit breaker, channel-appropriate fallback messages — never raw errors)
-- [ ] **API-06**: System has a mock mode replicating the Nexus spec so all development works before real credentials arrive
+- [x] **API-06
+**: System has a mock mode replicating the Nexus spec so all development works before real credentials arrive
 - [ ] **API-07**: Every tracking lookup is logged with its outcome (found / not found / postcode mismatch / API error) to power success metrics
 
 ### Tracking Portal
