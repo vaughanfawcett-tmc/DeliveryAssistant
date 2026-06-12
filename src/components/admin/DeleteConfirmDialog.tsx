@@ -6,7 +6,7 @@ import { deleteDriver } from '@/app/actions/drivers';
 interface Props {
   driverId: string;
   driverName: string;
-  onDone: (outcome: 'deleted' | 'cancel') => void;
+  onDone: (outcome: 'deleted' | 'cancel' | 'error', errorMessage?: string) => void;
 }
 
 export function DeleteConfirmDialog({ driverId, driverName, onDone }: Props) {
@@ -24,7 +24,12 @@ export function DeleteConfirmDialog({ driverId, driverName, onDone }: Props) {
 
   function handleConfirm() {
     startTransition(async () => {
-      await deleteDriver(driverId);
+      const result = await deleteDriver(driverId);
+      // WR-02: surface delete errors instead of silently closing the dialog
+      if (result?.error) {
+        onDone('error', result.error);
+        return;
+      }
       onDone('deleted');
     });
   }

@@ -48,9 +48,11 @@ export function DriverList({ drivers }: Props) {
     if (outcome === 'saved') showToast('Driver saved');
   }
 
-  function handleDeleteDone(outcome: 'deleted' | 'cancel') {
+  function handleDeleteDone(outcome: 'deleted' | 'cancel' | 'error', errorMessage?: string) {
     setModal(null);
     if (outcome === 'deleted') showToast('Driver deleted');
+    // WR-02: surface delete errors via toast instead of silently swallowing them
+    if (outcome === 'error') showToast(errorMessage ?? 'Failed to delete driver', 'error');
   }
 
   // ---------- Empty state ----------
