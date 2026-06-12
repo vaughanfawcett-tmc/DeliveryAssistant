@@ -14,7 +14,7 @@
  * e.g. "de1 1aa" -> "DE11AA", " SW1A 2AA " -> "SW1A2AA"
  */
 export function normalisePostcode(value: string): string {
-  return value.toUpperCase().replace(/\s+/g, '').trim();
+  return value.toUpperCase().replace(/\s+/g, '');
 }
 
 /**
