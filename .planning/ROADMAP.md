@@ -65,10 +65,10 @@ Plans:
   5. The outbound driver call sub-log is linked to the parent customer call and shows driver, duration, and outcome
 **Plans**: 4 plans
 Plans:
-- [ ] 03-01-PLAN.md — Auth foundation: iron-session, env secrets, middleware gate, login page/form (ADMIN-01)
-- [ ] 03-02-PLAN.md — Data layer (TDD): calls-repo, drivers-repo, PII masking, shared types, dev seed script (ADMIN-02, ADMIN-03, ADMIN-06, ADMIN-07)
-- [ ] 03-03-PLAN.md — Dashboard shell + Metrics + Driver CRUD (ADMIN-02, ADMIN-06)
-- [ ] 03-04-PLAN.md — Call history, detail, transcript, recording, driver sub-log (ADMIN-03, ADMIN-04, ADMIN-05, ADMIN-07)
+- [x] 03-01-PLAN.md — Auth foundation: iron-session, env secrets, middleware gate, login page/form (ADMIN-01)
+- [x] 03-02-PLAN.md — Data layer (TDD): calls-repo, drivers-repo, PII masking, shared types, dev seed script (ADMIN-02, ADMIN-03, ADMIN-06, ADMIN-07)
+- [x] 03-03-PLAN.md — Dashboard shell + Metrics + Driver CRUD (ADMIN-02, ADMIN-06)
+- [x] 03-04-PLAN.md — Call history, detail, transcript, recording, driver sub-log (ADMIN-03, ADMIN-04, ADMIN-05, ADMIN-07)
 **UI hint**: yes
 
 ### Phase 4: Voice Agent + Production
