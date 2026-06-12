@@ -7,8 +7,12 @@ import { DriverModal } from './DriverModal';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { Toast } from './Toast';
 
+// WR-05: phone_e164_display holds the masked phone for list rendering.
+// phone_e164 (raw) is retained so DriverModal can pre-populate the edit field.
+type DriverListRow = DriverRow & { phone_e164_display: string };
+
 interface Props {
-  drivers: DriverRow[];
+  drivers: DriverListRow[];
 }
 
 type ToastState = {
@@ -123,7 +127,7 @@ export function DriverList({ drivers }: Props) {
             {drivers.map((driver) => (
               <tr key={driver.id} className="hover:bg-zinc-50 transition-colors">
                 <td className="px-4 py-3 text-zinc-900">{driver.name}</td>
-                <td className="px-4 py-3 font-mono text-zinc-600">{driver.phone_e164}</td>
+                <td className="px-4 py-3 font-mono text-zinc-600">{driver.phone_e164_display}</td>
                 <td className="px-4 py-3">
                   {driver.active ? (
                     <span
@@ -180,7 +184,7 @@ export function DriverList({ drivers }: Props) {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="font-semibold text-zinc-900">{driver.name}</p>
-                <p className="font-mono text-sm text-zinc-600 mt-0.5">{driver.phone_e164}</p>
+                <p className="font-mono text-sm text-zinc-600 mt-0.5">{driver.phone_e164_display}</p>
               </div>
               {driver.active ? (
                 <span

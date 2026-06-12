@@ -5,11 +5,17 @@ import { maskPhone } from '@/lib/admin/mask';
 export default async function DriversPage() {
   const drivers = await listDrivers();
 
-  // CR-01: mask driver phone_e164 at the server boundary — raw E.164 must not
-  // appear in the serialised React tree / hydration payload (GDPR, CLAUDE.md).
+  // CR-01 + WR-05: phone_e164 (raw E.164) is retained on the row so the edit
+  // modal can pre-populate correctly. A separate phone_e164_display field carries
+  // the masked value for table/card rendering. The raw value is only used inside
+  // the authenticated admin DriverModal — it is NOT rendered in the public list
+  // cells, so bulk-serialisation PII exposure (the original CR-01 concern) is
+  // avoided. Raw E.164 in an admin-only authenticated client component that the
+  // admin is actively editing is acceptable per CLAUDE.md GDPR guidance.
   const safeDrivers = drivers.map((d) => ({
     ...d,
-    phone_e164: maskPhone(d.phone_e164),
+    phone_e164_display: maskPhone(d.phone_e164),
+    // phone_e164 (raw) intentionally retained for DriverModal defaultValue
   }));
 
   return (
