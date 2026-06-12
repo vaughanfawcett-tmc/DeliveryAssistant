@@ -49,6 +49,28 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ ...rest, PALLEX_MOCK: 'true' })).not.toThrow();
   });
 
+  it('treats empty-string PALLEX_USERNAME/PASSWORD as absent in mock mode (blank .env placeholders)', () => {
+    const env = parseEnv({
+      ...VALID_ENV,
+      PALLEX_MOCK: 'true',
+      PALLEX_USERNAME: '',
+      PALLEX_PASSWORD: '',
+    });
+    expect(env.PALLEX_USERNAME).toBeUndefined();
+    expect(env.PALLEX_PASSWORD).toBeUndefined();
+  });
+
+  it('still rejects empty-string PALLEX_USERNAME/PASSWORD when PALLEX_MOCK is false', () => {
+    expect(() =>
+      parseEnv({
+        ...VALID_ENV,
+        PALLEX_MOCK: 'false',
+        PALLEX_USERNAME: '',
+        PALLEX_PASSWORD: '',
+      })
+    ).toThrow();
+  });
+
   it('exposes all required env vars on the result object', () => {
     const env = parseEnv(VALID_ENV);
     expect(env.PALLEX_BASE_URL).toBe('https://nexus.pallex.com/api');

@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+// Treat an empty string as "absent" for optional fields. .env files routinely ship
+// blank placeholders (e.g. `PALLEX_USERNAME=`), which set the value to "" rather than
+// leaving it undefined. Without this, "" is "present" and fails `.min(1)` even in mock
+// mode — which broke static prerendering of any page that reads env at build time.
+const optionalCredential = z.preprocess(
+  (v) => (v === '' ? undefined : v),
+  z.string().min(1).optional()
+);
+
 const envSchema = z
   .object({
     PALLEX_MOCK: z
@@ -7,8 +16,8 @@ const envSchema = z
       .default('false')
       .transform((v) => v === 'true'),
     PALLEX_BASE_URL: z.string().url(),
-    PALLEX_USERNAME: z.string().min(1).optional(),
-    PALLEX_PASSWORD: z.string().min(1).optional(),
+    PALLEX_USERNAME: optionalCredential,
+    PALLEX_PASSWORD: optionalCredential,
     SUPABASE_URL: z.string().url(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     UPSTASH_REDIS_REST_URL: z.string().url(),
