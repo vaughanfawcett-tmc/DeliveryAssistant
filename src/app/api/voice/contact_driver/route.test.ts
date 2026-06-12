@@ -77,44 +77,10 @@ process.env.DRIVER_CALL_MAX_RETRIES = '2';
 // Import route AFTER env is set
 // ---------------------------------------------------------------------------
 
-const { POST, verifyVoiceSignature } = await import('./route');
+const { POST } = await import('./route');
 
-// ---------------------------------------------------------------------------
-// Tests: verifyVoiceSignature
-// ---------------------------------------------------------------------------
-
-describe('verifyVoiceSignature', () => {
-  it('accepts a valid X-Voice-Signature hex digest', () => {
-    const body = '{"test":true}';
-    const sig = createHmac('sha256', TEST_SECRET).update(body).digest('hex');
-    const headers = new Headers({ 'x-voice-signature': sig });
-    expect(verifyVoiceSignature(body, headers, TEST_SECRET)).toBe(true);
-  });
-
-  it('rejects a tampered body (signature mismatch)', () => {
-    const body = '{"test":true}';
-    const sig = createHmac('sha256', TEST_SECRET).update('{"test":false}').digest('hex');
-    const headers = new Headers({ 'x-voice-signature': sig });
-    expect(verifyVoiceSignature(body, headers, TEST_SECRET)).toBe(false);
-  });
-
-  it('accepts ElevenLabs structured format: t=<ts>,v1=<hex>', () => {
-    const body = '{"hello":"world"}';
-    const hex = createHmac('sha256', TEST_SECRET).update(body).digest('hex');
-    const headers = new Headers({ 'x-elevenlabs-signature': `t=1718000000,v1=${hex}` });
-    expect(verifyVoiceSignature(body, headers, TEST_SECRET)).toBe(true);
-  });
-
-  it('rejects when no signature header is present', () => {
-    const headers = new Headers({});
-    expect(verifyVoiceSignature('{}', headers, TEST_SECRET)).toBe(false);
-  });
-
-  it('rejects a wrong-length bad signature', () => {
-    const headers = new Headers({ 'x-voice-signature': 'tooshort' });
-    expect(verifyVoiceSignature('{}', headers, TEST_SECRET)).toBe(false);
-  });
-});
+// verifyVoiceSignature is no longer exported from this route (CR-01);
+// the canonical verifier tests live in webhook-auth.test.ts.
 
 // ---------------------------------------------------------------------------
 // Tests: POST handler

@@ -11,74 +11,19 @@
  * - T-04-22: Every attempt is logged as a driver/outbound calls row with parent_call_id.
  * - T-04-23: consented:false returns { contacted:false } immediately — no call placed.
  *
- * Webhook auth note: Plan 04-04's webhook-auth.ts is in a sibling wave and is NOT
- * available in this worktree. HMAC verification is implemented self-contained below
- * using the same timingSafeEqual pattern as src/lib/share/token.ts.
+ * Signature verification delegates to the canonical verifyProviderSignature from
+ * webhook-auth.ts (CR-01). Uses the 'default' provider (x-voice-signature bare hex)
+ * so this route's tool-call scenario continues to work without requiring the full
+ * ElevenLabs structured header.
  */
 
-import { createHmac, timingSafeEqual } from 'crypto';
 import { z } from 'zod';
 import { parseEnv } from '@/lib/env';
+import { verifyProviderSignature } from '@/lib/voice/webhook-auth';
 import { runDriverEscalation } from '@/lib/voice/driver-escalation';
 import { getDriverById } from '@/lib/repositories/drivers-repo';
 import { insertCall } from '@/lib/repositories/calls-repo';
 import { MockTelephonyAdapter } from '@/lib/voice/telephony/mock-adapter';
-
-// ---------------------------------------------------------------------------
-// Signature verification (self-contained — T-04-19)
-// Mirrors the timingSafeEqual pattern from src/lib/share/token.ts.
-// ---------------------------------------------------------------------------
-
-/**
- * Verify the HMAC-SHA256 signature on the raw request body.
- *
- * ElevenLabs sends the signature as a hex digest in the X-ElevenLabs-Signature
- * header in the format `t=<timestamp>,v1=<hex>` (similar to Stripe webhook sigs).
- * When no structured header is present, we also accept a bare hex sig in
- * `X-Voice-Signature` for simpler tool-call scenarios.
- *
- * Returns true only when the computed HMAC matches the provided signature
- * using constant-time comparison (prevents timing oracle attacks).
- */
-export function verifyVoiceSignature(
-  rawBody: string,
-  headers: Headers,
-  secret: string,
-): boolean {
-  // Try X-ElevenLabs-Signature first (structured: "t=<ts>,v1=<hex>")
-  const elevenlabsSig = headers.get('x-elevenlabs-signature');
-  if (elevenlabsSig) {
-    const v1Match = elevenlabsSig.match(/v1=([0-9a-f]+)/i);
-    if (!v1Match) return false;
-    const providedSig = v1Match[1];
-    const computed = createHmac('sha256', secret).update(rawBody).digest('hex');
-    try {
-      const expected = Buffer.from(computed, 'utf8');
-      const received = Buffer.from(providedSig.toLowerCase(), 'utf8');
-      if (expected.length !== received.length) return false;
-      return timingSafeEqual(expected, received);
-    } catch {
-      return false;
-    }
-  }
-
-  // Fallback: bare hex in X-Voice-Signature
-  const voiceSig = headers.get('x-voice-signature');
-  if (voiceSig) {
-    const computed = createHmac('sha256', secret).update(rawBody).digest('hex');
-    try {
-      const expected = Buffer.from(computed, 'utf8');
-      const received = Buffer.from(voiceSig.toLowerCase(), 'utf8');
-      if (expected.length !== received.length) return false;
-      return timingSafeEqual(expected, received);
-    } catch {
-      return false;
-    }
-  }
-
-  // No signature header present
-  return false;
-}
 
 // ---------------------------------------------------------------------------
 // Request body schema
@@ -108,7 +53,7 @@ export async function POST(req: Request): Promise<Response> {
 
   // --- 2. Verify signature FIRST (T-04-19) ------------------------------------
   const envVars = parseEnv(process.env as Record<string, string | undefined>);
-  if (!verifyVoiceSignature(rawBody, req.headers, envVars.VOICE_WEBHOOK_SECRET)) {
+  if (!verifyProviderSignature('default', rawBody, req.headers)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },

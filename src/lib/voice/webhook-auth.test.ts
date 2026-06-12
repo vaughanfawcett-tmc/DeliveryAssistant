@@ -113,18 +113,43 @@ describe('verifyProviderSignature', () => {
     expect(verifyProviderSignature('default', BODY, headers)).toBe(false);
   });
 
-  it('elevenlabs provider: reads its signing header and uses ELEVENLABS_WEBHOOK_SECRET', () => {
+  it('elevenlabs provider: reads its signing header (structured t=,v1=) and uses ELEVENLABS_WEBHOOK_SECRET', () => {
     const elSecret = process.env.ELEVENLABS_WEBHOOK_SECRET!;
     const sig = sign(BODY, elSecret);
-    const headers = new Headers({ 'elevenlabs-signature': sig });
+    const nowSec = Math.floor(Date.now() / 1000);
+    const headers = new Headers({ 'elevenlabs-signature': `t=${nowSec},v1=${sig}` });
     expect(verifyProviderSignature('elevenlabs', BODY, headers)).toBe(true);
   });
 
   it('elevenlabs provider: falls back to VOICE_WEBHOOK_SECRET when ELEVENLABS_WEBHOOK_SECRET absent', () => {
     delete process.env.ELEVENLABS_WEBHOOK_SECRET;
     const sig = sign(BODY, VOICE_SECRET);
-    const headers = new Headers({ 'elevenlabs-signature': sig });
+    const nowSec = Math.floor(Date.now() / 1000);
+    const headers = new Headers({ 'elevenlabs-signature': `t=${nowSec},v1=${sig}` });
     expect(verifyProviderSignature('elevenlabs', BODY, headers)).toBe(true);
+  });
+
+  it('elevenlabs provider: rejects a stale timestamp (> 300 s old) — CR-02 replay protection', () => {
+    const elSecret = process.env.ELEVENLABS_WEBHOOK_SECRET ?? VOICE_SECRET;
+    const sig = sign(BODY, elSecret);
+    // Timestamp 301 seconds in the past
+    const staleTs = Math.floor(Date.now() / 1000) - 301;
+    const headers = new Headers({ 'elevenlabs-signature': `t=${staleTs},v1=${sig}` });
+    expect(verifyProviderSignature('elevenlabs', BODY, headers)).toBe(false);
+  });
+
+  it('elevenlabs provider: rejects when t= field is missing', () => {
+    const elSecret = process.env.ELEVENLABS_WEBHOOK_SECRET ?? VOICE_SECRET;
+    const sig = sign(BODY, elSecret);
+    const headers = new Headers({ 'elevenlabs-signature': `v1=${sig}` });
+    expect(verifyProviderSignature('elevenlabs', BODY, headers)).toBe(false);
+  });
+
+  it('elevenlabs provider: rejects a bare hex sig (old format — no t= field)', () => {
+    const elSecret = process.env.ELEVENLABS_WEBHOOK_SECRET ?? VOICE_SECRET;
+    const sig = sign(BODY, elSecret);
+    const headers = new Headers({ 'elevenlabs-signature': sig });
+    expect(verifyProviderSignature('elevenlabs', BODY, headers)).toBe(false);
   });
 
   it('twilio provider: reads X-Twilio-Signature header and uses VOICE_WEBHOOK_SECRET', () => {

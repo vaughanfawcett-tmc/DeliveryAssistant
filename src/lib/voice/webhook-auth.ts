@@ -7,14 +7,27 @@
  * - Length guard prevents timingSafeEqual from throwing when signature
  *   lengths differ (same pattern as src/lib/share/token.ts).
  * - Never throws: all failure paths return false.
+ * - CR-02: Timestamp staleness window (±300 s) enforced for ElevenLabs structured
+ *   signatures. Replayed payloads older than 5 minutes are rejected.
  *
  * Provider header mapping:
- *   elevenlabs → elevenlabs-signature  (secret: ELEVENLABS_WEBHOOK_SECRET ?? VOICE_WEBHOOK_SECRET)
- *   twilio     → x-twilio-signature    (secret: VOICE_WEBHOOK_SECRET)
- *   default    → x-voice-signature     (secret: VOICE_WEBHOOK_SECRET)
+ *   elevenlabs → elevenlabs-signature  structured `t=<ts>,v1=<hex>` format
+ *                (secret: ELEVENLABS_WEBHOOK_SECRET ?? VOICE_WEBHOOK_SECRET)
+ *   twilio     → x-twilio-signature    bare hex
+ *                (secret: VOICE_WEBHOOK_SECRET)
+ *   default    → x-voice-signature     bare hex
+ *                (secret: VOICE_WEBHOOK_SECRET)
+ *
+ * ElevenLabs header format (canonical — matches real ElevenLabs webhook docs):
+ *   elevenlabs-signature: t=1718000000,v1=<hex>
+ * The `t=` field is a Unix timestamp (seconds). Signatures more than
+ * MAX_SIG_AGE_SECONDS old are rejected to prevent indefinite replay attacks (CR-02).
  */
 
 import { createHmac, timingSafeEqual } from 'crypto';
+
+/** Maximum age (in seconds) for ElevenLabs structured signatures (CR-02). */
+const MAX_SIG_AGE_SECONDS = 300;
 
 // ---------------------------------------------------------------------------
 // Core: signature computation
@@ -72,6 +85,12 @@ export function verifyVoiceSignature(
  * verifyVoiceSignature. Secrets are read lazily from process.env so tests
  * can stub them without a module-cache reset.
  *
+ * For the 'elevenlabs' provider, the header MUST use the structured format:
+ *   elevenlabs-signature: t=<unix_ts>,v1=<hex>
+ * Both `t=` and `v1=` fields are required. The timestamp is checked against
+ * the current clock; signatures older than MAX_SIG_AGE_SECONDS are rejected
+ * regardless of HMAC validity (CR-02 replay protection).
+ *
  * @param provider   'elevenlabs' | 'twilio' | 'default'
  * @param rawBody    The raw request body string (before JSON.parse)
  * @param headers    The incoming request Headers object
@@ -88,13 +107,25 @@ export function verifyProviderSignature(
 
     switch (provider) {
       case 'elevenlabs': {
-        const signature = headers.get('elevenlabs-signature');
+        // ElevenLabs canonical header: elevenlabs-signature: t=<ts>,v1=<hex>
+        const sigHeader = headers.get('elevenlabs-signature') ?? '';
+        const tMatch = sigHeader.match(/t=(\d+)/);
+        const v1Match = sigHeader.match(/v1=([0-9a-f]+)/i);
+
+        // Both fields are required (CR-02: timestamp is mandatory)
+        if (!tMatch || !v1Match) return false;
+
+        // Timestamp staleness check (CR-02): reject replays older than 5 minutes
+        const signedAt = parseInt(tMatch[1], 10);
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (Math.abs(nowSec - signedAt) > MAX_SIG_AGE_SECONDS) return false;
+
         // Use ElevenLabs-specific secret if set, fall back to VOICE_WEBHOOK_SECRET
         const secret =
           process.env.ELEVENLABS_WEBHOOK_SECRET && process.env.ELEVENLABS_WEBHOOK_SECRET.length > 0
             ? process.env.ELEVENLABS_WEBHOOK_SECRET
             : voiceSecret;
-        return verifyVoiceSignature(rawBody, signature, secret);
+        return verifyVoiceSignature(rawBody, v1Match[1], secret);
       }
 
       case 'twilio': {
