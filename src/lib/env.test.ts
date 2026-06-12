@@ -15,6 +15,18 @@ const VALID_ENV = {
   DASHBOARD_SESSION_SECRET: 'test-session-secret-at-least-32-chars-long',
 };
 
+// Extend VALID_ENV with live-mode credentials (Phase 4 voice vars required when PALLEX_MOCK=false)
+const LIVE_ENV = {
+  ...VALID_ENV,
+  PALLEX_MOCK: 'false',
+  ELEVENLABS_API_KEY: 'test-elevenlabs-api-key',
+  ELEVENLABS_AGENT_ID: 'test-elevenlabs-agent-id',
+  ELEVENLABS_WEBHOOK_SECRET: 'test-elevenlabs-webhook-secret',
+  TWILIO_ACCOUNT_SID: 'test-twilio-account-sid',
+  TWILIO_AUTH_TOKEN: 'test-twilio-auth-token',
+  TWILIO_PHONE_NUMBER: '+441234567890',
+};
+
 describe('parseEnv', () => {
   it('parses PALLEX_MOCK="true" as boolean true', () => {
     const env = parseEnv({ ...VALID_ENV, PALLEX_MOCK: 'true' });
@@ -22,12 +34,12 @@ describe('parseEnv', () => {
   });
 
   it('parses PALLEX_MOCK="false" as boolean false', () => {
-    const env = parseEnv({ ...VALID_ENV, PALLEX_MOCK: 'false' });
+    const env = parseEnv(LIVE_ENV);
     expect(env.PALLEX_MOCK).toBe(false);
   });
 
   it('defaults PALLEX_MOCK to false when unset', () => {
-    const { PALLEX_MOCK: _, ...rest } = VALID_ENV;
+    const { PALLEX_MOCK: _, ...rest } = LIVE_ENV;
     const env = parseEnv(rest);
     expect(env.PALLEX_MOCK).toBe(false);
   });
@@ -38,13 +50,13 @@ describe('parseEnv', () => {
   });
 
   it('throws when PALLEX_USERNAME is missing and PALLEX_MOCK is false', () => {
-    const { PALLEX_USERNAME: _, ...rest } = VALID_ENV;
-    expect(() => parseEnv({ ...rest, PALLEX_MOCK: 'false' })).toThrow();
+    const { PALLEX_USERNAME: _, ...rest } = LIVE_ENV;
+    expect(() => parseEnv(rest)).toThrow();
   });
 
   it('throws when PALLEX_PASSWORD is missing and PALLEX_MOCK is false', () => {
-    const { PALLEX_PASSWORD: _, ...rest } = VALID_ENV;
-    expect(() => parseEnv({ ...rest, PALLEX_MOCK: 'false' })).toThrow();
+    const { PALLEX_PASSWORD: _, ...rest } = LIVE_ENV;
+    expect(() => parseEnv(rest)).toThrow();
   });
 
   it('allows PALLEX_USERNAME and PALLEX_PASSWORD to be absent when PALLEX_MOCK is true', () => {
@@ -66,8 +78,7 @@ describe('parseEnv', () => {
   it('still rejects empty-string PALLEX_USERNAME/PASSWORD when PALLEX_MOCK is false', () => {
     expect(() =>
       parseEnv({
-        ...VALID_ENV,
-        PALLEX_MOCK: 'false',
+        ...LIVE_ENV,
         PALLEX_USERNAME: '',
         PALLEX_PASSWORD: '',
       })

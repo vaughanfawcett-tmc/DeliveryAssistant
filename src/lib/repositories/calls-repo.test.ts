@@ -118,6 +118,7 @@ function makeCustomerCall(overrides: Partial<CallRow> = {}): CallRow {
     outcome: 'resolved',
     tracking_ref: null,
     transcript: null,
+    recording_url: null,
     disconnection_reason: null,
     parent_call_id: null,
     created_at: BASE_DATE.toISOString(),

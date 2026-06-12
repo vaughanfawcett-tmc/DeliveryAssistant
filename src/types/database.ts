@@ -24,6 +24,7 @@ export interface CallRow {
   outcome: 'resolved' | 'escalated' | 'no_data' | 'failed' | null;
   tracking_ref: string | null;
   transcript: string | null;
+  recording_url: string | null;         // D-08: provider recording URL; null in mock; 30-day retention
   disconnection_reason: string | null;
   parent_call_id: string | null;      // uuid references calls.id
   created_at: string;                 // timestamptz as ISO string

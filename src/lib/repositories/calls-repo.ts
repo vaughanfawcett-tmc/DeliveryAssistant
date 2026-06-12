@@ -13,7 +13,7 @@
 
 // The supabase singleton is imported dynamically in getDefaultRepo() to avoid
 // eagerly evaluating env validation when this module is imported in tests.
-import type { CallRow } from '../../types/database';
+import type { CallRow, Database } from '../../types/database';
 import type { CallMetrics, CallSummary, CallListOptions } from '../admin/types';
 import { maskPhone } from '../admin/mask';
 
@@ -187,7 +187,37 @@ export function createCallsRepo(client: SupabaseLike) {
     return data as CallRow[];
   }
 
-  return { getMetrics, listCustomerCalls, getCallById, getDriverCallsForParent };
+  /**
+   * Insert a new call row.
+   * Throws on error — call records must save or surface failure (D-07).
+   * Returns void: Supabase JS v2 .insert() without .select() resolves to
+   * { data: null, error: null } on success.
+   */
+  async function insertCall(
+    row: Database['public']['Tables']['calls']['Insert'],
+  ): Promise<void> {
+    const { error } = await client.from('calls').insert(row);
+    if (error) throw new Error(`[calls-repo] insert failed: ${error.message}`);
+  }
+
+  /**
+   * Update a call row identified by platform_call_id.
+   * Throws on error — mutations must not silently swallow failures (D-07).
+   * Returns void: Supabase JS v2 .update() without .select() resolves to
+   * { data: null, error: null } on success.
+   */
+  async function updateCall(
+    platformCallId: string,
+    patch: Database['public']['Tables']['calls']['Update'],
+  ): Promise<void> {
+    const { error } = await client
+      .from('calls')
+      .update(patch)
+      .eq('platform_call_id', platformCallId);
+    if (error) throw new Error(`[calls-repo] update failed: ${error.message}`);
+  }
+
+  return { getMetrics, listCustomerCalls, getCallById, getDriverCallsForParent, insertCall, updateCall };
 }
 
 // ---------------------------------------------------------------------------
@@ -224,4 +254,19 @@ export async function getCallById(id: string): Promise<CallRow | null> {
 export async function getDriverCallsForParent(parentCallId: string): Promise<CallRow[]> {
   const repo = await getDefaultRepo();
   return repo.getDriverCallsForParent(parentCallId);
+}
+
+export async function insertCall(
+  row: Database['public']['Tables']['calls']['Insert'],
+): Promise<void> {
+  const repo = await getDefaultRepo();
+  return repo.insertCall(row);
+}
+
+export async function updateCall(
+  platformCallId: string,
+  patch: Database['public']['Tables']['calls']['Update'],
+): Promise<void> {
+  const repo = await getDefaultRepo();
+  return repo.updateCall(platformCallId, patch);
 }

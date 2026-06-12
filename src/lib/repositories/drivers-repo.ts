@@ -20,6 +20,7 @@ import type { DriverRow } from '../../types/database';
 interface SelectBuilder {
   eq(column: string, value: unknown): SelectBuilder;
   order(column: string): SelectBuilder;
+  single(): Promise<{ data: DriverRow | null; error: { message: string } | null }>;
   then<U>(
     resolve: (v: { data: DriverRow[] | null; error: { message: string } | null }) => U,
   ): Promise<U>;
@@ -106,7 +107,21 @@ export function createDriversRepo(client: SupabaseLike) {
     if (error) throw new Error(`[drivers-repo] delete failed: ${error.message}`);
   }
 
-  return { listDrivers, insertDriver, updateDriver, deleteDriver };
+  /**
+   * Fetch a single driver row by its primary key.
+   * Returns null when not found or on error — never throws (safe for voice-agent lookup).
+   */
+  async function getDriverById(id: string): Promise<DriverRow | null> {
+    const { data, error } = await client
+      .from('drivers')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error || !data) return null;
+    return data as DriverRow;
+  }
+
+  return { listDrivers, insertDriver, updateDriver, deleteDriver, getDriverById };
 }
 
 // ---------------------------------------------------------------------------
@@ -147,4 +162,9 @@ export async function updateDriver(
 export async function deleteDriver(id: string): Promise<void> {
   const repo = await getDefaultRepo();
   return repo.deleteDriver(id);
+}
+
+export async function getDriverById(id: string): Promise<DriverRow | null> {
+  const repo = await getDefaultRepo();
+  return repo.getDriverById(id);
 }
