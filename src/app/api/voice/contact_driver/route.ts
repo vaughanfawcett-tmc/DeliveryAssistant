@@ -66,7 +66,7 @@ export async function POST(req: Request): Promise<Response> {
     const json = JSON.parse(rawBody) as unknown;
     const result = ContactDriverBodySchema.safeParse(json);
     if (!result.success) {
-      return new Response(JSON.stringify({ error: 'Invalid request body', details: result.error.flatten() }), {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });

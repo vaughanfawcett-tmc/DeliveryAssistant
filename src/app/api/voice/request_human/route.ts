@@ -38,7 +38,7 @@ export async function POST(req: Request): Promise<Response> {
     const json: unknown = JSON.parse(rawBody);
     const result = bodySchema.safeParse(json);
     if (!result.success) {
-      return Response.json({ error: 'Invalid request body', issues: result.error.issues }, { status: 400 });
+      return Response.json({ error: 'Invalid request body' }, { status: 400 });
     }
     summary = result.data.summary;
   } catch {
