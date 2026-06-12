@@ -9,13 +9,14 @@ import type { CallRow } from '../../types/database';
 /**
  * A chainable builder that accumulates filters and then resolves.
  * Supports: .select .eq .gte .lte .ilike .order .range .single
+ *
+ * When countMode=true (select('*', { count: 'exact', head: true })),
+ * resolves with { count, data: null, error } instead of { data[], error }.
  */
-function makeQueryBuilder(rows: Partial<CallRow>[], insertError: Error | null = null) {
+function makeQueryBuilder(rows: Partial<CallRow>[], countMode = false) {
   let filtered = [...rows];
-  let ordered = false;
   let rangeStart: number | null = null;
   let rangeEnd: number | null = null;
-  let selectSingle = false;
 
   const builder: any = {
     eq(col: string, val: unknown) {
@@ -39,7 +40,6 @@ function makeQueryBuilder(rows: Partial<CallRow>[], insertError: Error | null = 
       return builder;
     },
     order(_col: string) {
-      ordered = true;
       return builder;
     },
     range(from: number, to: number) {
@@ -48,7 +48,6 @@ function makeQueryBuilder(rows: Partial<CallRow>[], insertError: Error | null = 
       return builder;
     },
     single() {
-      selectSingle = true;
       return {
         then(resolve: (v: any) => void) {
           const result =
@@ -61,6 +60,10 @@ function makeQueryBuilder(rows: Partial<CallRow>[], insertError: Error | null = 
     },
     // Promise resolution for normal (non-single) queries
     then(resolve: (v: any) => void) {
+      if (countMode) {
+        // count query — return total filtered rows, no data
+        return Promise.resolve({ count: filtered.length, data: null, error: null }).then(resolve);
+      }
       let data = filtered;
       if (rangeStart !== null && rangeEnd !== null) {
         data = filtered.slice(rangeStart, rangeEnd + 1);
@@ -80,8 +83,10 @@ function makeFakeClient(seedRows: Partial<CallRow>[] = [], insertError: Error | 
   const _inserted: InsertedRow[] = [];
 
   return {
-    from: (table: string) => ({
-      select: (_cols?: string) => makeQueryBuilder(seedRows),
+    from: (_table: string) => ({
+      // select('*', { count: 'exact', head: true }) → countMode builder
+      select: (_cols?: string, opts?: { count?: string; head?: boolean }) =>
+        makeQueryBuilder(seedRows, opts?.count === 'exact' && opts?.head === true),
       insert: (row: InsertedRow | InsertedRow[]) => {
         if (insertError) return Promise.resolve({ data: null, error: insertError });
         const rows = Array.isArray(row) ? row : [row];

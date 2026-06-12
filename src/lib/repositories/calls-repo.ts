@@ -23,6 +23,8 @@ import { maskPhone } from '../admin/mask';
 
 type SingleResult<T> = Promise<{ data: T | null; error: { message: string } | null }>;
 type QueryResult<T> = Promise<{ data: T[] | null; error: { message: string } | null }>;
+// WR-04: count query resolves with { count, data: null, error }
+type CountResult = Promise<{ count: number | null; data: null; error: { message: string } | null }>;
 
 interface SelectBuilder<T = unknown> {
   eq(column: string, value: unknown): SelectBuilder<T>;
@@ -35,8 +37,18 @@ interface SelectBuilder<T = unknown> {
   then<U>(resolve: (v: { data: T[] | null; error: { message: string } | null }) => U): Promise<U>;
 }
 
+// WR-04: count-mode builder — only filter methods + awaitable that yields CountResult
+interface CountBuilder {
+  eq(column: string, value: unknown): CountBuilder;
+  gte(column: string, value: string): CountBuilder;
+  lte(column: string, value: string): CountBuilder;
+  ilike(column: string, pattern: string): CountBuilder;
+  then<U>(resolve: (v: { count: number | null; data: null; error: { message: string } | null }) => U): Promise<U>;
+}
+
 interface FromBuilder {
   select(cols?: string): SelectBuilder;
+  select(cols: string, opts: { count: 'exact'; head: true }): CountBuilder;
   insert(row: object | object[]): Promise<{ data: unknown; error: { message: string } | null }>;
   update(patch: object): UpdateBuilder;
   delete(): UpdateBuilder;
@@ -85,38 +97,55 @@ export function createCallsRepo(client: SupabaseLike) {
   /**
    * List inbound customer calls with optional filters and pagination.
    * Returns CallSummary[] — from_number_masked via maskPhone, never raw from_number.
+   *
+   * WR-04: uses server-side COUNT + RANGE pagination so we never fetch all rows.
    */
   async function listCustomerCalls(
     opts: CallListOptions,
   ): Promise<{ rows: CallSummary[]; total: number }> {
     const { since, until, outcome, search, page = 1, pageSize = 25 } = opts;
 
-    let query = client
+    // --- Count query (head:true = no row data, just the aggregate count) ---
+    let countQuery = client
+      .from('calls')
+      .select('*', { count: 'exact', head: true })
+      .eq('call_type', 'customer')
+      .eq('direction', 'inbound') as CountBuilder;
+
+    if (since) countQuery = countQuery.gte('start_at', since.toISOString());
+    if (until) countQuery = countQuery.lte('start_at', until.toISOString());
+    if (outcome) countQuery = countQuery.eq('outcome', outcome);
+    if (search) countQuery = countQuery.ilike('tracking_ref', `%${search}%`);
+
+    const { count, error: countError } = await (countQuery as unknown as CountResult);
+
+    if (countError) return { rows: [], total: 0 };
+    const total = count ?? 0;
+
+    if (total === 0) return { rows: [], total: 0 };
+
+    // --- Paginated data query ---
+    const from = (page - 1) * pageSize;
+    const to = page * pageSize - 1; // Supabase range() is inclusive
+
+    let dataQuery = client
       .from('calls')
       .select('*')
       .eq('call_type', 'customer')
       .eq('direction', 'inbound') as SelectBuilder<CallRow>;
 
-    if (since) query = query.gte('start_at', since.toISOString());
-    if (until) query = query.lte('start_at', until.toISOString());
-    if (outcome) query = query.eq('outcome', outcome);
-    if (search) query = query.ilike('tracking_ref', `%${search}%`);
+    if (since) dataQuery = dataQuery.gte('start_at', since.toISOString());
+    if (until) dataQuery = dataQuery.lte('start_at', until.toISOString());
+    if (outcome) dataQuery = dataQuery.eq('outcome', outcome);
+    if (search) dataQuery = dataQuery.ilike('tracking_ref', `%${search}%`);
 
-    query = query.order('start_at');
+    dataQuery = dataQuery.order('start_at').range(from, to);
 
-    // Fetch all matching rows first to get the total count
-    const { data: allData, error } = await (query as unknown as QueryResult<CallRow>);
+    const { data, error } = await (dataQuery as unknown as QueryResult<CallRow>);
 
-    if (error || !allData) return { rows: [], total: 0 };
+    if (error || !data) return { rows: [], total };
 
-    const total = allData.length;
-
-    // Apply pagination slice
-    const from = (page - 1) * pageSize;
-    const to = page * pageSize;
-    const paged = allData.slice(from, to);
-
-    const rows: CallSummary[] = paged.map((row) => ({
+    const rows: CallSummary[] = data.map((row) => ({
       id: row.id,
       start_at: row.start_at,
       duration_ms: row.duration_ms,
