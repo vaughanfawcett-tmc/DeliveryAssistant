@@ -166,7 +166,7 @@ describe('POST /api/voice/call_ended', () => {
     durationMs: 180000,
     outcome: 'resolved',
     transcript: validTranscript,
-    recordingUrl: 'https://recordings.example.com/el-call-001.mp3',
+    recordingUrl: 'https://recordings.elevenlabs.io/el-call-001.mp3',
     disconnectionReason: 'customer_hangup',
   };
 
@@ -227,11 +227,11 @@ describe('POST /api/voice/call_ended', () => {
       expect(updateMock.mock.calls[0][0]).toBe('el-call-001');
     });
 
-    it('persists recording_url', async () => {
+    it('persists recording_url for allowed host (elevenlabs.io)', async () => {
       const req = makeRequest(URL, validBody);
       await callEndedPost(req);
       const patch = updateMock.mock.calls[0][1] as Record<string, unknown>;
-      expect(patch.recording_url).toBe('https://recordings.example.com/el-call-001.mp3');
+      expect(patch.recording_url).toBe('https://recordings.elevenlabs.io/el-call-001.mp3');
     });
 
     it('persists recording_url as null when absent', async () => {
@@ -240,6 +240,28 @@ describe('POST /api/voice/call_ended', () => {
       await callEndedPost(req);
       const patch = updateMock.mock.calls[0][1] as Record<string, unknown>;
       expect(patch.recording_url).toBeNull();
+    });
+
+    it('CR-03: rejects recording_url with a non-allowlisted host — 400, updateCall NOT called', async () => {
+      const req = makeRequest(URL, {
+        ...validBody,
+        recordingUrl: 'https://evil.example.com/steal-audio.mp3',
+      });
+      const res = await callEndedPost(req);
+      expect(res.status).toBe(400);
+      expect(updateMock).not.toHaveBeenCalled();
+    });
+
+    it('CR-03: accepts recording_url on twilio.com subdomain', async () => {
+      updateMock.mockReset().mockResolvedValue(undefined);
+      const req = makeRequest(URL, {
+        ...validBody,
+        recordingUrl: 'https://api.twilio.com/recordings/RE123.mp3',
+      });
+      const res = await callEndedPost(req);
+      expect(res.status).toBe(200);
+      const patch = updateMock.mock.calls[0][1] as Record<string, unknown>;
+      expect(patch.recording_url).toBe('https://api.twilio.com/recordings/RE123.mp3');
     });
 
     it('persists JSON-stringified transcript parseable by TranscriptView', async () => {

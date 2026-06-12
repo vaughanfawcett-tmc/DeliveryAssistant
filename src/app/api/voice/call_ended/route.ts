@@ -64,14 +64,31 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // 3. Serialise transcript as the JSON array shape TranscriptView parses
+  // 3. Allowlist-validate recording_url to prevent SSRF via injected URLs (CR-03)
+  const ALLOWED_RECORDING_HOSTS = ['.elevenlabs.io', '.twilio.com'];
+  if (parsed.recordingUrl) {
+    let recordingUrlObj: URL;
+    try {
+      recordingUrlObj = new URL(parsed.recordingUrl);
+    } catch {
+      return Response.json({ error: 'Invalid recording URL' }, { status: 400 });
+    }
+    const allowed = ALLOWED_RECORDING_HOSTS.some((suffix) =>
+      recordingUrlObj.hostname.endsWith(suffix),
+    );
+    if (!allowed) {
+      return Response.json({ error: 'Invalid recording URL host' }, { status: 400 });
+    }
+  }
+
+  // 4. Serialise transcript as the JSON array shape TranscriptView parses
   const transcriptTurns: TranscriptTurn[] = parsed.transcript.map((t) => ({
     speaker: t.speaker,
     text: t.text,
     ...(t.ts !== undefined ? { ts: t.ts } : {}),
   }));
 
-  // 4. Update the call row (T-04-16 auditable record)
+  // 5. Update the call row (T-04-16 auditable record)
   await updateCall(parsed.platformCallId, {
     end_at: parsed.endAt,
     duration_ms: parsed.durationMs,
