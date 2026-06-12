@@ -12,20 +12,19 @@ A customer can find out where their delivery is — accurately, in under a minut
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Customer can track a delivery on a web portal using tracking number + delivery postcode — *Validated in Phase 2: Tracking Portal*
+- [x] Portal shows delivery status, status description, estimated delivery date/time, and progress milestones in a clean mobile-first UI — *Validated in Phase 2: Tracking Portal*
+- [x] Derby Aggs team can manage a list of drivers (name, phone number) in the admin dashboard — *Validated in Phase 3: Admin Dashboard*
+- [x] Admin dashboard shows core call metrics: total calls received, answered, missed, success rate — *Validated in Phase 3: Admin Dashboard*
+- [x] Admin dashboard shows call history (customer name, tracking number, date/time, duration, outcome) with date/agent/status filters and search — *Validated in Phase 3: Admin Dashboard*
+- [x] Derby Aggs team can log in to the dashboard with a shared password — *Validated in Phase 3: Admin Dashboard*
 
 ### Active
 
-- [ ] Customer can track a delivery on a web portal using tracking number + delivery postcode
-- [ ] Portal shows delivery status, status description, estimated delivery date/time, and progress milestones in a clean mobile-first UI
 - [ ] Customer can call a phone number and get the same tracking information from a voice AI agent
 - [ ] Voice agent reliably captures tracking numbers and postcodes by voice, including in noisy environments
 - [ ] Voice agent handles invalid details, no-result lookups, and API downtime with clear fallback paths (including human escalation)
 - [ ] Voice agent can place an outbound call to a Derby Aggs driver mid-interaction to obtain a live ETA or status, and relay it to the customer
-- [ ] Derby Aggs team can manage a list of drivers (name, phone number) in the admin dashboard
-- [ ] Admin dashboard shows core call metrics: total calls received, answered, missed, success rate
-- [ ] Admin dashboard shows call history (customer name, tracking number, date/time, duration, outcome) with date/agent/status filters and search
-- [ ] Derby Aggs team can log in to the dashboard with a shared password
 
 ### Out of Scope
 
@@ -85,4 +84,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-12 — Phase 2 (Tracking Portal) complete: mobile-first customer lookup portal built on the Phase 1 backend — POST/server-action lookup (no data in URL), status header + 5-stage milestone stepper, time window, reverse-chron event history, vehicle details, distinct error states with postcode-verified multiple-match chooser, and HMAC-signed share/print links that never expose the postcode (PORT-01..08, 5/5 success criteria verified automatically, 93 tests, production build clean). 4 visual UAT items (375px above-fold, time-window prominence, share-link round-trip, print output) tracked in 02-HUMAN-UAT.md pending a browser check. Phase 1 (Foundation) complete: Nexus integration layer, Supabase schema, MSW mock, postcode-gated tracking service (API-01..07). User-facing portal requirements now built; the customer-track-on-web requirement validates on UAT sign-off. Voice/admin requirements remain Active for Phases 3-4.*
+*Last updated: 2026-06-12 — Phase 3 (Admin Dashboard) complete: shared-password admin dashboard built on the Phase 1 backend — iron-session auth gate over /dashboard/* with session re-check in every server action, metrics overview (received/answered/missed/success-rate for today/7d/30d), filterable+searchable+paginated call history with per-call detail (speaker-labelled transcript, recording player stubbed per D-03, linked outbound driver sub-log via parent_call_id), full driver CRUD (E.164-validated, deactivate/delete) and a dev seed script (ADMIN-01..07, 6/6 must-haves verified, 118 tests, typecheck clean; code review fixed 2 critical + 7 warnings across 3 iterations incl. driver-PII masking, logout session-destroy, and a Supabase insert/update false-throw bug). 6 visual/interaction UAT items (login flow, metric tabs, history filters+pagination, driver CRUD toasts, transcript rendering, 375px responsive) tracked in 03-HUMAN-UAT.md pending a browser check. Phase 2 (Tracking Portal) complete: mobile-first customer lookup portal (PORT-01..08). Phase 1 (Foundation) complete: Nexus integration layer, Supabase schema, MSW mock (API-01..07). Web portal + admin dashboard now built; only Phase 4 (Voice Agent + Production) remains Active.*
