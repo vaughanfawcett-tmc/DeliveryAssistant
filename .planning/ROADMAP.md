@@ -30,10 +30,10 @@
   5. Every lookup (found, not found, postcode mismatch, API error) produces a log entry with outcome — queryable from the database
 **Plans**: 4 plans
 Plans:
-- [ ] 01-01-PLAN.md — Scaffold Next.js 15 app, shared types, validated env + mock switch (API-06)
-- [ ] 01-02-PLAN.md — Nexus client: single-flight token lifecycle, circuit breaker, MSW mock (API-01, API-05, API-06)
-- [ ] 01-03-PLAN.md — Supabase schema (portal_lookups/calls/drivers) + lookup-logging repository (API-07)
-- [ ] 01-04-PLAN.md — Tracking service: lookup + postcode gate + status mapping + outcome logging (API-02, API-03, API-04)
+- [x] 01-01-PLAN.md — Scaffold Next.js 15 app, shared types, validated env + mock switch (API-06)
+- [x] 01-02-PLAN.md — Nexus client: single-flight token lifecycle, circuit breaker, MSW mock (API-01, API-05, API-06)
+- [x] 01-03-PLAN.md — Supabase schema (portal_lookups/calls/drivers) + lookup-logging repository (API-07)
+- [x] 01-04-PLAN.md — Tracking service: lookup + postcode gate + status mapping + outcome logging (API-02, API-03, API-04)
 
 ### Phase 2: Tracking Portal
 **Goal**: A customer can look up their delivery status on a mobile phone using a tracking number and postcode, and see all relevant delivery information with clear handling of every error state
