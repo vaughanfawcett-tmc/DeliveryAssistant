@@ -45,7 +45,12 @@ Plans:
   3. The portal shows the full scan/event history in reverse-chronological order
   4. Each distinct error state (not found, postcode mismatch, multiple matches, API unavailable) shows a specific, helpful message rather than a generic error
   5. A customer can share or print a status page via a signed link that does not expose their postcode
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 02-01-PLAN.md — Portal foundation: swappable accent token, CONTACT_PHONE + SHARE_TOKEN_SECRET env, responsive shell, jsdom test infra (PORT-06)
+- [ ] 02-02-PLAN.md — TDD: signed share-token codec + share-lookup (postcode-gate-free) + multiple-match candidate surfacing (PORT-05, PORT-08)
+- [ ] 02-03-PLAN.md — Result + error components: status/stepper/time-window/history/vehicle + distinct error states & chooser (PORT-02, PORT-03, PORT-04, PORT-05, PORT-07)
+- [ ] 02-04-PLAN.md — Wiring: POST server action, lookup form, signed share route, ShareBar, print stylesheet (PORT-01, PORT-06, PORT-08)
 **UI hint**: yes
 
 ### Phase 3: Admin Dashboard
@@ -82,7 +87,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/4 | Planned | - |
-| 2. Tracking Portal | 0/? | Not started | - |
+| 2. Tracking Portal | 0/4 | Planned | - |
 | 3. Admin Dashboard | 0/? | Not started | - |
 | 4. Voice Agent + Production | 0/? | Not started | - |
 
