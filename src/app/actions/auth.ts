@@ -37,6 +37,6 @@ export async function loginAction(
  */
 export async function logoutAction(): Promise<void> {
   const session = await getIronSession<SessionData>(await cookies(), getSessionOptions());
-  session.destroy();
+  await session.destroy(); // CR-02: must await to guarantee Set-Cookie header is written
   redirect('/login');
 }
