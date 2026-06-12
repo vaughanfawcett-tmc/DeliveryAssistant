@@ -14,8 +14,16 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+// WR-06: Validate UUID format before hitting the DB. Supabase .eq() is
+// parameterised (no SQL injection risk) but an invalid UUID still causes a
+// Supabase error — rejecting early prevents unnecessary DB traffic and
+// avoids any schema information leaking from Supabase error messages.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function CallDetailPage({ params }: Props) {
   const { id } = await params;
+
+  if (!UUID_RE.test(id)) notFound();
 
   const call = await getCallById(id);
   if (!call) notFound();
