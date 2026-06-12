@@ -16,6 +16,7 @@
     "@supabase/supabase-js": "latest",
     "@upstash/redis": "latest",
     "date-fns": "^3",
+    "iron-session": "^8.0.4",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -31,12 +32,14 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "latest",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "jsdom": "^29.1.1",
     "msw": "^2",
     "supabase": "latest",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5",
     "vitest": "latest"
   }
