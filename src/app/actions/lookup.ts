@@ -36,7 +36,13 @@ export async function lookup(
  * lookup in this session — lookupForShare bypasses the postcode gate safely.
  */
 export async function lookupByConsignment(consignmentNumber: string): Promise<TrackingResult> {
-  return lookupForShare(consignmentNumber);
+  // Input cap (WR-01): server actions are publicly addressable POST endpoints, so
+  // never trust the caller — reject blank/over-length refs rather than forwarding.
+  const ref = (consignmentNumber ?? '').trim();
+  if (!ref || ref.length > 30) {
+    return { ok: false, reason: 'not_found' };
+  }
+  return lookupForShare(ref);
 }
 
 /**
@@ -46,5 +52,10 @@ export async function lookupByConsignment(consignmentNumber: string): Promise<Tr
  */
 export async function makeShareUrl(consignmentNumber: string): Promise<string> {
   'use server';
-  return `/track/${createShareToken(consignmentNumber)}`;
+  // Input cap (WR-01): refuse to mint a token for a blank/over-length ref.
+  const ref = (consignmentNumber ?? '').trim();
+  if (!ref || ref.length > 30) {
+    throw new Error('Invalid consignment number for share link');
+  }
+  return `/track/${createShareToken(ref)}`;
 }

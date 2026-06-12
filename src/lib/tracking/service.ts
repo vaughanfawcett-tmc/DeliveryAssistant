@@ -78,10 +78,31 @@ export function createTrackingService(deps: TrackingServiceDeps) {
       return { ok: false, reason: 'not_found' };
     }
 
-    // Step 3: Multiple matches — surface safe candidate detail for the chooser (D-10, PORT-05).
-    // Log under not_found bucket; no auto-pick (T-01-15).
-    if (nexusResult.consignments.length > 1) {
-      const candidates: MatchCandidate[] = nexusResult.consignments.map((c) => ({
+    // Defensive: ok:true with an empty consignment list shouldn't happen (the Nexus
+    // client guarantees >=1), but never index into an empty array — treat as not_found.
+    if (nexusResult.consignments.length === 0) {
+      await logLookup({ trackingRef, postcode: normalisedPostcode, success: false, outcome: 'not_found' });
+      return { ok: false, reason: 'not_found' };
+    }
+
+    // Step 3: POSTCODE GATE — MUST run BEFORE any status OR candidate data is shaped,
+    // for the single- AND multiple-match paths alike (API-03, success criterion 2,
+    // T-01-13, CR-01). Reveal nothing about a consignment whose delivery postcode the
+    // caller has not supplied — including the chooser's town/status candidate detail.
+    const matching = nexusResult.consignments.filter((c) =>
+      postcodesMatch(postcode, c.delAddressPostcode)
+    );
+
+    if (matching.length === 0) {
+      await logLookup({ trackingRef, postcode: normalisedPostcode, success: false, outcome: 'postcode_mismatch' });
+      return { ok: false, reason: 'postcode_mismatch' };
+    }
+
+    // Step 4: Multiple consignments verified to this postcode (e.g. several parcels to
+    // the same address) — surface the chooser with safe candidate detail only (D-10,
+    // PORT-05). Candidates are all postcode-verified; no auto-pick (T-01-15).
+    if (matching.length > 1) {
+      const candidates: MatchCandidate[] = matching.map((c) => ({
         consignmentNumber: c.consignmentNumber,
         delAddressTown: c.delAddressTown,
         plainStatus: mapStatusName(c.status.name).plainStatus,
@@ -90,14 +111,8 @@ export function createTrackingService(deps: TrackingServiceDeps) {
       return { ok: false, reason: 'multiple_matches', candidates };
     }
 
-    const consignment = nexusResult.consignments[0];
-
-    // Step 4: POSTCODE GATE — MUST run BEFORE mapStatusName so no status data is
-    // shaped for a non-matching postcode (success criterion 2, T-01-13)
-    if (!postcodesMatch(postcode, consignment.delAddressPostcode)) {
-      await logLookup({ trackingRef, postcode: normalisedPostcode, success: false, outcome: 'postcode_mismatch' });
-      return { ok: false, reason: 'postcode_mismatch' };
-    }
+    // Exactly one postcode-verified consignment — safe to shape and return it.
+    const consignment = matching[0];
 
     // Step 5: Gate passed — now it is safe to shape the status data
     const { stage, plainStatus, description } = mapStatusName(consignment.status.name);
@@ -137,6 +152,13 @@ export function createTrackingService(deps: TrackingServiceDeps) {
       if (nexusResult.error === 'nexus_unavailable') {
         return { ok: false, reason: 'api_error' };
       }
+      return { ok: false, reason: 'not_found' };
+    }
+
+    // Defensive length guard (WR-02): never index into an empty list — a future API
+    // drift or test injection of { ok: true, consignments: [] } must yield a clean
+    // not_found, not an uncaught throw / 500.
+    if (nexusResult.consignments.length === 0) {
       return { ok: false, reason: 'not_found' };
     }
 

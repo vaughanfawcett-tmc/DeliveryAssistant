@@ -110,46 +110,71 @@ describe('lookupConsignment (via createTrackingService)', () => {
     );
   });
 
-  it('multiple matches: returns ok:false reason:multiple_matches with candidates array containing safe detail', async () => {
-    const nexusLookup = makeNexusLookup({
-      ok: true,
-      consignments: [FOUND_IN_TRANSIT, FOUND_NULL_ETA],
-    });
+  it('multiple matches AT THE SAME POSTCODE: returns multiple_matches with safe candidate detail', async () => {
+    // Legitimate multi-parcel case — two consignments delivered to the SAME postcode.
+    // The chooser must only ever list postcode-verified candidates (D-10, CR-01).
+    const parcelOne = { ...FOUND_IN_TRANSIT, consignmentNumber: 'PA-12345', delAddressTown: 'Derby', delAddressPostcode: 'DE1 1AA' };
+    const parcelTwo = { ...FOUND_NULL_ETA, consignmentNumber: 'PA-99999', delAddressTown: 'Derby', delAddressPostcode: 'DE1 1AA' };
+    const nexusLookup = makeNexusLookup({ ok: true, consignments: [parcelOne, parcelTwo] });
     const { lookupConsignment } = createTrackingService({ nexusLookup, logLookup: logLookupSpy });
 
-    const result = await lookupConsignment({ trackingRef: 'PA-12345', postcode: 'DE1 1AA' });
+    const result = await lookupConsignment({ trackingRef: 'PA-MULTI', postcode: 'DE1 1AA' });
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error('Expected ok:false');
     expect(result.reason).toBe('multiple_matches');
 
-    // Must carry candidates (D-10)
     if (result.reason !== 'multiple_matches') throw new Error('Expected multiple_matches');
     expect(result.candidates).toHaveLength(2);
 
-    // First candidate maps FOUND_IN_TRANSIT
     const first = result.candidates[0];
     expect(first.consignmentNumber).toBe('PA-12345');
     expect(first.delAddressTown).toBe('Derby');
     expect(typeof first.plainStatus).toBe('string');
     expect(first.plainStatus.length).toBeGreaterThan(0);
 
-    // Second candidate maps FOUND_NULL_ETA
     const second = result.candidates[1];
     expect(second.consignmentNumber).toBe('PA-99999');
-    expect(second.delAddressTown).toBe('Nottingham');
 
-    // Neither candidate has a postcode field (D-10: safe detail only)
+    // Neither candidate exposes a postcode field (D-10: safe detail only)
     expect(first).not.toHaveProperty('postcode');
     expect(first).not.toHaveProperty('delAddressPostcode');
     expect(second).not.toHaveProperty('postcode');
     expect(second).not.toHaveProperty('delAddressPostcode');
 
-    // Logged under not_found bucket
     expect(logLookupSpy).toHaveBeenCalledOnce();
-    expect(logLookupSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ success: false }),
-    );
+    expect(logLookupSpy).toHaveBeenCalledWith(expect.objectContaining({ success: false }));
+  });
+
+  it('postcode gate on the multiple-match path: a non-matching candidate is NEVER revealed (CR-01)', async () => {
+    // Nexus returns two consignments to DIFFERENT postcodes. The caller supplies the
+    // Derby postcode — they must get only their own delivery, with no leak of the
+    // Nottingham consignment's town/status. With one postcode-verified survivor this
+    // collapses to a single found result.
+    const derby = { ...FOUND_IN_TRANSIT, consignmentNumber: 'PA-12345', delAddressPostcode: 'DE1 1AA' };
+    const nottingham = { ...FOUND_NULL_ETA, consignmentNumber: 'PA-99999', delAddressPostcode: 'NG1 5FS' };
+    const nexusLookup = makeNexusLookup({ ok: true, consignments: [derby, nottingham] });
+    const { lookupConsignment } = createTrackingService({ nexusLookup, logLookup: logLookupSpy });
+
+    const result = await lookupConsignment({ trackingRef: 'PA-SHARED', postcode: 'DE1 1AA' });
+
+    // Only the Derby consignment survives the gate → returned as a single found result.
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok:true');
+    expect(result.consignment.consignmentNumber).toBe('PA-12345');
+  });
+
+  it('multiple Nexus hits, NONE matching the supplied postcode: returns postcode_mismatch (no leak)', async () => {
+    const derby = { ...FOUND_IN_TRANSIT, consignmentNumber: 'PA-12345', delAddressPostcode: 'DE1 1AA' };
+    const nottingham = { ...FOUND_NULL_ETA, consignmentNumber: 'PA-99999', delAddressPostcode: 'NG1 5FS' };
+    const nexusLookup = makeNexusLookup({ ok: true, consignments: [derby, nottingham] });
+    const { lookupConsignment } = createTrackingService({ nexusLookup, logLookup: logLookupSpy });
+
+    const result = await lookupConsignment({ trackingRef: 'PA-SHARED', postcode: 'XX1 1XX' });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected ok:false');
+    expect(result.reason).toBe('postcode_mismatch');
   });
 
   it('null ETA passthrough: estimatedDelDate is null, not fabricated', async () => {

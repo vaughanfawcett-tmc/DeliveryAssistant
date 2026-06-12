@@ -10,7 +10,7 @@ interface Props {
   readOnly?: boolean; // true on signed share page — hides share slot
 }
 
-export function TrackingResult({ consignment, readOnly }: Props) {
+export function TrackingResult({ consignment }: Props) {
   return (
     <div className="flex flex-col gap-6 w-full max-w-md">
       {/* Above fold: status + ETA + milestone — PORT-02, D-07 */}
@@ -28,8 +28,8 @@ export function TrackingResult({ consignment, readOnly }: Props) {
       <EventHistory routeDetails={consignment.routeDetails} />
       <VehicleDetails routeDetails={consignment.routeDetails} />
 
-      {/* ShareBar wired in Plan 04 — hidden when readOnly */}
-      {!readOnly && null}
+      {/* ShareBar is rendered by PortalView (not here) so this stays a pure
+          presentation component; the share page renders it with readOnly and no ShareBar. */}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { verifyShareToken } from '@/lib/share/token';
 import { lookupForShare } from '@/lib/tracking/service';
@@ -6,6 +7,12 @@ import { TrackingResult } from '@/components/TrackingResult';
 // No "use client" — Server Component.
 // The token in the URL contains only the HMAC-signed consignment number and
 // expiry — never the postcode (T-02-13, D-12).
+
+// WR-04: keep share links out of search indexes. The URL renders live delivery
+// status for the token's TTL; a crawler must never index or cache it.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 interface Props {
   params: Promise<{ token: string }>;
