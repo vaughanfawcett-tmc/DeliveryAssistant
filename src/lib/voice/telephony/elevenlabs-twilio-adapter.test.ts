@@ -171,6 +171,14 @@ describe('ElevenLabsTwilioAdapter', () => {
       const expected = `Basic ${Buffer.from(`${testConfig.twilioSid}:${testConfig.twilioToken}`).toString('base64')}`;
       expect(authHeader).toBe(expected);
     });
+
+    it('WR-04: does NOT send X-Transfer-Summary header to Twilio (GDPR / PII)', async () => {
+      const adapter = makeAdapter();
+      // summary contains PII — must not be forwarded to Twilio's logging infrastructure
+      await adapter.transferToHuman('TW000call', '+441332999999', 'Postcode: DE1 1AA, tracking PA-99999');
+      const summaryHeader = capturedRequests[0].headers.get('x-transfer-summary');
+      expect(summaryHeader).toBeNull();
+    });
   });
 
   describe('sendDtmf', () => {

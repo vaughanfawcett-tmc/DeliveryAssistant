@@ -110,15 +110,17 @@ export class ElevenLabsTwilioAdapter implements VoiceTelephonyAdapter {
 
     const body = new URLSearchParams({
       Twiml: `<Response><Dial>${toNumber}</Dial></Response>`,
-      // summary is NOT sent to Twilio (would appear in logs) — kept server-side only
     });
-    // Attach summary as a custom header for downstream logging — not Twilio-visible
+    // WR-04: summary intentionally NOT sent to Twilio — Twilio logs all request
+    // headers (including custom ones) in their request inspector and data retention.
+    // The summary may contain PII (postcodes, transcript excerpts) outside any
+    // GDPR data-processing agreement scope for that field. Warm-handoff context is
+    // available server-side via the calls-repo audit trail instead.
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: basicAuth(this.cfg.twilioSid, this.cfg.twilioToken),
-        'X-Transfer-Summary': summary,
       },
       body: body.toString(),
     });
