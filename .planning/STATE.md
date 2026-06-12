@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md (portal foundation)
-last_updated: "2026-06-12T10:43:29.332Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-06-12T10:49:34.453Z"
 last_activity: 2026-06-12
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 5
-  percent: 63
+  completed_plans: 6
+  percent: 75
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-11)
 ## Current Position
 
 Phase: 02 (tracking-portal) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-12
 
-Progress: [██████░░░░] 63%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [██████░░░░] 63%
 | Phase 01 P02 | 12 | 3 tasks | 10 files |
 | Phase 01-foundation P04 | 3 | 3 tasks | 6 files |
 | Phase 02 P01 | 122 | 3 tasks | 7 files |
+| Phase 02-tracking-portal P02 | 237 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Recent decisions affecting current work:
 - SHARE_TOKEN_SECRET uses .min(32) with 40-char dev default — never optional to prevent silently disabling HMAC signing
 - Global vitest environment stays node; jsdom per component test file via docblock (no cross-contamination)
 - Accent hex #2563eb lives only in globals.css :root; all components reference text-accent/bg-accent utilities
+- Share token encodes {c, exp} only — postcode never in token (T-02-06, D-12)
+- lookupForShare bypasses postcode gate — signed token is the authorisation (T-02-07, D-12)
+- MatchCandidate carries town + plainStatus only — no postcode (D-10 safe detail)
 
 ### Pending Todos
 
@@ -102,8 +106,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-12T10:43:29.327Z
-Stopped at: Completed 02-01-PLAN.md (portal foundation)
+Last session: 2026-06-12T10:49:34.448Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
 
 **Planned Phase:** 02 (tracking-portal) — 4 plans — 2026-06-12T10:32:12.148Z
