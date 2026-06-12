@@ -29,7 +29,7 @@ interface UpdateBuilder {
   eq(
     column: string,
     value: unknown,
-  ): Promise<{ data: DriverRow[] | null; error: { message: string } | null }>;
+  ): Promise<{ data: unknown; error: { message: string } | null }>;
 }
 
 interface DeleteBuilder {
@@ -38,7 +38,7 @@ interface DeleteBuilder {
 
 interface FromBuilder {
   select(cols?: string): SelectBuilder;
-  insert(row: object): Promise<{ data: DriverRow[] | null; error: { message: string } | null }>;
+  insert(row: object): Promise<{ data: unknown; error: { message: string } | null }>;
   update(patch: object): UpdateBuilder;
   delete(): DeleteBuilder;
 }
@@ -73,26 +73,28 @@ export function createDriversRepo(client: SupabaseLike) {
   /**
    * Insert a new driver row.
    * Throws on error — driver data must save or surface failure to the user (T-03-09).
+   * Returns void: Supabase JS v2 .insert() without .select() resolves to
+   * { data: null, error: null } on success; the write is confirmed by the
+   * absence of an error (no row return needed by the caller).
    */
-  async function insertDriver(input: { name: string; phone_e164: string }): Promise<DriverRow> {
-    const { data, error } = await client.from('drivers').insert(input);
+  async function insertDriver(input: { name: string; phone_e164: string }): Promise<void> {
+    const { error } = await client.from('drivers').insert(input);
     if (error) throw new Error(`[drivers-repo] insert failed: ${error.message}`);
-    if (!data || data.length === 0) throw new Error('[drivers-repo] insert returned no row');
-    return data[0] as DriverRow;
   }
 
   /**
    * Update a driver row by id.
    * Throws on error — mutations must not silently swallow failures (T-03-09).
+   * Returns void: Supabase JS v2 .update() without .select() resolves to
+   * { data: null, error: null } on success; the write is confirmed by the
+   * absence of an error.
    */
   async function updateDriver(
     id: string,
     patch: Partial<{ name: string; phone_e164: string; active: boolean }>,
-  ): Promise<DriverRow> {
-    const { data, error } = await client.from('drivers').update(patch).eq('id', id);
+  ): Promise<void> {
+    const { error } = await client.from('drivers').update(patch).eq('id', id);
     if (error) throw new Error(`[drivers-repo] update failed: ${error.message}`);
-    if (!data || data.length === 0) throw new Error('[drivers-repo] update returned no row');
-    return data[0] as DriverRow;
   }
 
   /**
@@ -129,7 +131,7 @@ export async function listDrivers(activeOnly?: boolean): Promise<DriverRow[]> {
 export async function insertDriver(input: {
   name: string;
   phone_e164: string;
-}): Promise<DriverRow> {
+}): Promise<void> {
   const repo = await getDefaultRepo();
   return repo.insertDriver(input);
 }
@@ -137,7 +139,7 @@ export async function insertDriver(input: {
 export async function updateDriver(
   id: string,
   patch: Partial<{ name: string; phone_e164: string; active: boolean }>,
-): Promise<DriverRow> {
+): Promise<void> {
   const repo = await getDefaultRepo();
   return repo.updateDriver(id, patch);
 }

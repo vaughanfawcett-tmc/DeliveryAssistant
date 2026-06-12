@@ -156,12 +156,14 @@ describe('listDrivers', () => {
 // ---------------------------------------------------------------------------
 
 describe('insertDriver', () => {
-  it('inserts the driver and returns the created row', async () => {
+  it('inserts the driver row without throwing', async () => {
     const fake = makeFakeClient();
     const repo = createDriversRepo(fake as any);
-    const result = await repo.insertDriver({ name: 'Charlie', phone_e164: '+447911123456' });
-    expect(result).toMatchObject({ name: 'Charlie', phone_e164: '+447911123456' });
+    await expect(
+      repo.insertDriver({ name: 'Charlie', phone_e164: '+447911123456' }),
+    ).resolves.toBeUndefined();
     expect(fake._inserted).toHaveLength(1);
+    expect(fake._inserted[0]).toMatchObject({ name: 'Charlie', phone_e164: '+447911123456' });
   });
 
   it('throws when the insert returns an error', async () => {
@@ -180,11 +182,12 @@ describe('updateDriver', () => {
     const driver = makeDriver({ id: 'driver-id-1', active: true });
     const fake = makeFakeClient([driver]);
     const repo = createDriversRepo(fake as any);
-    const result = await repo.updateDriver('driver-id-1', { active: false });
+    await expect(
+      repo.updateDriver('driver-id-1', { active: false }),
+    ).resolves.toBeUndefined();
     expect(fake._updated).toHaveLength(1);
     expect(fake._updated[0].id).toBe('driver-id-1');
     expect((fake._updated[0].patch as any).active).toBe(false);
-    expect(result.active).toBe(false);
   });
 
   it('throws when the update returns an error', async () => {
