@@ -116,12 +116,14 @@ describe('POST /api/voice/contact_driver — consent gate (T-04-23)', () => {
     mockGetDriverById.mockClear();
   });
 
-  it('returns { contacted:false } when consented:false, no call placed', async () => {
+  it('returns { contacted:false, reason:"consent_not_given" } when consented:false, no call placed', async () => {
     const req = makeRequest({ parentCallId: PARENT_CALL_ID, driverId: DRIVER_ID, consented: false });
     const res = await POST(req);
     expect(res.status).toBe(200);
-    const body = await res.json() as { contacted: boolean };
+    const body = await res.json() as { contacted: boolean; reason: string };
     expect(body.contacted).toBe(false);
+    // WR-02: explicit reason so agent can check before telling customer
+    expect(body.reason).toBe('consent_not_given');
     // No outbound call — getDriverById was never called, no row logged
     expect(mockGetDriverById).not.toHaveBeenCalled();
     expect(mockInsertCall).not.toHaveBeenCalled();

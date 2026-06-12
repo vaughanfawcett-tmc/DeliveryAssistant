@@ -82,8 +82,10 @@ export async function POST(req: Request): Promise<Response> {
   const { parentCallId, driverId, consented } = parsed;
 
   // --- 4. Consent gate (DRIV-01 / T-04-23) -----------------------------------
+  // WR-02: Return explicit { contacted: false, reason } so the ElevenLabs agent can
+  // check `contacted` before telling the customer the driver was called.
   if (!consented) {
-    return new Response(JSON.stringify({ contacted: false }), {
+    return new Response(JSON.stringify({ contacted: false, reason: 'consent_not_given' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
