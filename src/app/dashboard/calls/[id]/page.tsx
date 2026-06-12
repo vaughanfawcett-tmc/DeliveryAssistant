@@ -60,7 +60,8 @@ export default async function CallDetailPage({ params }: Props) {
           id: dc.id,
           duration_ms: dc.duration_ms,
           outcome: dc.outcome,
-          from_number: dc.from_number,
+          // WR-01: mask at server boundary so raw E.164 never enters the serialised React tree
+          from_number_masked: maskPhone(dc.from_number ?? null),
         }))}
       />
     </main>

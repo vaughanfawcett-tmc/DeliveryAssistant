@@ -2,16 +2,14 @@
 
 import { useState } from 'react';
 import type { CallRow } from '@/types/database';
-import { maskPhone } from '@/lib/admin/mask';
 
-// Only the fields we need — no caller PII beyond managed driver phone
+// Only the fields we need — no caller PII beyond managed driver phone.
+// WR-01: from_number_masked is pre-masked server-side; raw from_number never crosses the boundary.
 interface DriverCallEntry {
   id: string;
   duration_ms: number | null;
   outcome: CallRow['outcome'];
-  // Driver phone (managed data, not PII in the same sense as customer from_number)
-  // but we mask it anyway for consistency
-  from_number: string | null;
+  from_number_masked: string; // always pre-masked by server component (WR-01)
 }
 
 interface Props {
@@ -78,7 +76,7 @@ export function DriverCallSubLog({ calls }: Props) {
                   return (
                     <tr key={call.id} className="border-b border-zinc-100 hover:bg-zinc-50">
                       <td className="py-2 font-mono text-sm text-zinc-600">
-                        {maskPhone(call.from_number)}
+                        {call.from_number_masked}
                       </td>
                       <td className="py-2 text-sm text-zinc-600">
                         {formatDuration(call.duration_ms)}
