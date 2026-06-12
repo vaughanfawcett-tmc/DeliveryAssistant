@@ -10,6 +10,9 @@ const VALID_ENV = {
   SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
   UPSTASH_REDIS_REST_URL: 'https://redis.upstash.io',
   UPSTASH_REDIS_REST_TOKEN: 'redis-token',
+  // Admin dashboard auth — required (no defaults)
+  DASHBOARD_PASSWORD: 'test-staff-password',
+  DASHBOARD_SESSION_SECRET: 'test-session-secret-at-least-32-chars-long',
 };
 
 describe('parseEnv', () => {

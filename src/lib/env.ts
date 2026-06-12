@@ -24,6 +24,9 @@ const envSchema = z
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     CONTACT_PHONE: z.string().min(1).default('+44 000 000 0000'),
     SHARE_TOKEN_SECRET: z.string().min(32).default('dev-only-insecure-share-secret-change-me'),
+    // Admin dashboard auth — NO defaults: app must fail to boot if absent (Pitfall 3)
+    DASHBOARD_PASSWORD: z.string().min(8),
+    DASHBOARD_SESSION_SECRET: z.string().min(32),
   })
   .refine(
     (data) => {
