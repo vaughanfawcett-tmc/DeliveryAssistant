@@ -85,4 +85,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-11 after initialization*
+*Last updated: 2026-06-12 — Phase 1 (Foundation) complete: Pall-Ex Nexus integration layer (single-flight token lifecycle, circuit breaker), Supabase schema, MSW mock mode, and the postcode-gated tracking service are built and verified (API-01..07, 5/5 success criteria, 46 tests). User-facing requirements remain Active — they validate when the portal (Phase 2) and voice agent (Phase 4) surfaces ship.*
