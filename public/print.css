@@ -1,0 +1,30 @@
+/* print.css — print stylesheet for the delivery status page (D-12, PORT-08) */
+/* Referenced from layout.tsx as <link media="print"> */
+
+@media print {
+  /* Hide interactive controls — Tailwind print:hidden covers most, belt-and-braces here */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  button {
+    display: none !important;
+  }
+
+  /* Clean black-on-white output */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Ensure links print as plain text (no underline colour confusion) */
+  a {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+
+  /* Remove padding from the page wrapper to maximise print area */
+  main {
+    padding: 0 !important;
+  }
+}
