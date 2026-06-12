@@ -27,6 +27,22 @@ const envSchema = z
     // Admin dashboard auth — NO defaults: app must fail to boot if absent (Pitfall 3)
     DASHBOARD_PASSWORD: z.string().min(8),
     DASHBOARD_SESSION_SECRET: z.string().min(32),
+    // Voice / telephony — optional credentials (required when PALLEX_MOCK=false)
+    ELEVENLABS_API_KEY: optionalCredential,
+    ELEVENLABS_AGENT_ID: optionalCredential,
+    ELEVENLABS_WEBHOOK_SECRET: optionalCredential,
+    TWILIO_ACCOUNT_SID: optionalCredential,
+    TWILIO_AUTH_TOKEN: optionalCredential,
+    TWILIO_PHONE_NUMBER: optionalCredential,
+    // VOICE_WEBHOOK_SECRET: mirrors SHARE_TOKEN_SECRET — never optional so HMAC
+    // verification cannot be silently disabled (T-04-01)
+    VOICE_WEBHOOK_SECRET: z
+      .string()
+      .min(32)
+      .default('dev-only-insecure-voice-webhook-secret-change-me'),
+    // Driver escalation hard limits (DRIV-02 / DRIV-04)
+    DRIVER_CALL_MAX_DURATION_S: z.coerce.number().int().positive().default(180),
+    DRIVER_CALL_MAX_RETRIES: z.coerce.number().int().nonnegative().default(2),
   })
   .refine(
     (data) => {
@@ -44,6 +60,28 @@ const envSchema = z
       message:
         'PALLEX_USERNAME and PALLEX_PASSWORD are required when PALLEX_MOCK=false',
       path: ['PALLEX_USERNAME'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (!data.PALLEX_MOCK) {
+        const isPresent = (v: string | undefined): boolean =>
+          typeof v === 'string' && v.length > 0;
+        return (
+          isPresent(data.ELEVENLABS_API_KEY) &&
+          isPresent(data.ELEVENLABS_AGENT_ID) &&
+          isPresent(data.ELEVENLABS_WEBHOOK_SECRET) &&
+          isPresent(data.TWILIO_ACCOUNT_SID) &&
+          isPresent(data.TWILIO_AUTH_TOKEN) &&
+          isPresent(data.TWILIO_PHONE_NUMBER)
+        );
+      }
+      return true;
+    },
+    {
+      message:
+        'ELEVENLABS_API_KEY, ELEVENLABS_AGENT_ID, ELEVENLABS_WEBHOOK_SECRET, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER are required when PALLEX_MOCK=false',
+      path: ['ELEVENLABS_API_KEY'],
     }
   );
 

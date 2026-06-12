@@ -6,3 +6,5 @@ import '@testing-library/jest-dom/vitest';
 // can be overridden per-file by setting process.env before module import.
 process.env.DASHBOARD_PASSWORD ||= 'test-dashboard-password';
 process.env.DASHBOARD_SESSION_SECRET ||= 'test-dashboard-session-secret-32chars-minimum-len';
+// Phase 4 voice env stub — schema enforces .min(32); mock-aware (PALLEX_MOCK=true by default in tests)
+process.env.VOICE_WEBHOOK_SECRET ||= 'test-voice-webhook-secret-32chars-minimum-xx';
