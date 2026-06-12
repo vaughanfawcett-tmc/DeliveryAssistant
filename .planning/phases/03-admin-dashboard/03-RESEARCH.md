@@ -587,22 +587,25 @@ This is not a rename/refactor/migration phase. Omitted.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **`await cookies()` in middleware — edge compatibility with iron-session 8.0.4**
+1. **`await cookies()` in middleware — edge compatibility with iron-session 8.0.4** — **RESOLVED**
    - What we know: Next.js 16 makes `cookies()` async; iron-session 8 examples show `await cookies()`.
    - What's unclear: Whether `getIronSession` with `await cookies()` works inside `src/middleware.ts` in the Edge runtime (middleware runs on Vercel Edge by default).
    - Recommendation: Test the middleware iron-session pattern early in the first plan wave. If Edge-incompatible, use `request.cookies.get('da_session')` + a lightweight manual verification inside middleware, and reserve `getIronSession` for Server Actions and Server Components only.
+   - **RESOLVED:** Plan 03-01 Task 2 implements the iron-session middleware path AND a documented fallback to a presence-only cookie check (`request.cookies.get('da_session')`) for the Edge runtime, with a SUMMARY deviation note if the fallback is taken. `session.ts` deliberately omits `import 'server-only'` so it is Edge-safe.
 
-2. **DASHBOARD_PASSWORD env var naming — conflict with existing `env.ts` schema**
+2. **DASHBOARD_PASSWORD env var naming — conflict with existing `env.ts` schema** — **RESOLVED**
    - What we know: `env.ts` uses zod to validate all env vars. Adding `DASHBOARD_PASSWORD` and `DASHBOARD_SESSION_SECRET` requires updating `envSchema`.
    - What's unclear: Whether the session secret should be a second separate env var or reuse `SHARE_TOKEN_SECRET`. They serve different cryptographic purposes (session encryption vs HMAC signing) — they should be separate.
    - Recommendation: Add both `DASHBOARD_PASSWORD: z.string().min(8)` and `DASHBOARD_SESSION_SECRET: z.string().min(32)` to `envSchema` with NO defaults.
+   - **RESOLVED:** Plan 03-01 Task 1 adds both vars as separate zod entries with NO defaults — `DASHBOARD_PASSWORD: z.string().min(8)` and `DASHBOARD_SESSION_SECRET: z.string().min(32)`. They are kept distinct from `SHARE_TOKEN_SECRET` (session encryption vs HMAC signing).
 
-3. **Transcript field format — plain text or structured JSON**
+3. **Transcript field format — plain text or structured JSON** — **RESOLVED**
    - What we know: `calls.transcript` is `text` in the schema. Phase 4 will write it. The UI spec shows speaker-labelled turns (Agent / Customer + timestamp).
    - What's unclear: Whether the Phase 4 voice platform will write structured JSON (array of `{speaker, text, timestamp}`) or plain concatenated text.
    - Recommendation: Seed data should write transcript as structured JSON (e.g., `[{"speaker":"agent","text":"Hello...","ts":0},...]`). TranscriptView should attempt JSON.parse and fall back to plain text rendering. This makes Phase 3 work with seed data and Phase 4 compatible without a migration.
+   - **RESOLVED:** Plan 03-02 Task 3 seeds transcripts as structured JSON; Plan 03-04 Task 3 `TranscriptView` attempts `JSON.parse` and falls back to plain-text rendering — no migration required for Phase 4 compatibility.
 
 ---
 
