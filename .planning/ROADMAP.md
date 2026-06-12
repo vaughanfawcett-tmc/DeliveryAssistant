@@ -63,7 +63,12 @@ Plans:
   3. The call history log can be filtered by date range, outcome, and searched by tracking reference — and each record is viewable with full transcript and call recording
   4. A staff member can add, edit, deactivate, and delete a driver (name and phone number) and the change is immediately reflected in the driver list used for outbound calls
   5. The outbound driver call sub-log is linked to the parent customer call and shows driver, duration, and outcome
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 03-01-PLAN.md — Auth foundation: iron-session, env secrets, middleware gate, login page/form (ADMIN-01)
+- [ ] 03-02-PLAN.md — Data layer (TDD): calls-repo, drivers-repo, PII masking, shared types, dev seed script (ADMIN-02, ADMIN-03, ADMIN-06, ADMIN-07)
+- [ ] 03-03-PLAN.md — Dashboard shell + Metrics + Driver CRUD (ADMIN-02, ADMIN-06)
+- [ ] 03-04-PLAN.md — Call history, detail, transcript, recording, driver sub-log (ADMIN-03, ADMIN-04, ADMIN-05, ADMIN-07)
 **UI hint**: yes
 
 ### Phase 4: Voice Agent + Production
@@ -88,7 +93,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/4 | Planned | - |
 | 2. Tracking Portal | 0/4 | Planned | - |
-| 3. Admin Dashboard | 0/? | Not started | - |
+| 3. Admin Dashboard | 0/4 | Planned | - |
 | 4. Voice Agent + Production | 0/? | Not started | - |
 
 ---
