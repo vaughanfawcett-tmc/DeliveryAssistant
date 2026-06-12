@@ -109,9 +109,14 @@ None yet.
 
 ## Deferred Items
 
+Acknowledged and deferred at v1.0 milestone close on 2026-06-12 (all human-action / external by design):
+
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| *(none)* | | | |
+| uat | 02-HUMAN-UAT.md — 4 browser-verification scenarios | partial | 2026-06-12 |
+| uat | 03-HUMAN-UAT.md — 6 browser-verification scenarios | partial | 2026-06-12 |
+| uat | 04-HUMAN-UAT.md — production cutover (SC-5 noise go/no-go, SC-6 live Pall-Ex canary, E2E live call) | partial | 2026-06-12 |
+| verification | 02/03/04-VERIFICATION.md — status human_needed (code verified; awaiting human/live validation) | human_needed | 2026-06-12 |
 
 ## Session Continuity
 
