@@ -49,9 +49,9 @@ export default async function CallDetailPage({ params }: Props) {
         <TranscriptView transcript={call.transcript} />
       </div>
 
-      {/* Recording — Phase 3 stub: no recordings yet (D-03) */}
+      {/* Recording — D-08: recording_url set on call_ended; null in mock mode */}
       <div className="mb-6">
-        <RecordingPlayer recordingUrl={null} />
+        <RecordingPlayer recordingUrl={call.recording_url} />
       </div>
 
       {/* Outbound driver call sub-log */}
