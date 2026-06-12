@@ -25,7 +25,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Tracking Portal
 
-- [ ] **PORT-01**: Customer can look up a delivery with tracking number + delivery postcode (submitted via POST — no tracking data in URLs)
+- [x] **PORT-01
+**: Customer can look up a delivery with tracking number + delivery postcode (submitted via POST — no tracking data in URLs)
 - [x] **PORT-02
 **: Portal shows current status, plain-language description, estimated delivery date, and a visual milestone timeline
 - [x] **PORT-03
