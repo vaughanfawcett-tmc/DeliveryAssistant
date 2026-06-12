@@ -47,10 +47,10 @@ Plans:
   5. A customer can share or print a status page via a signed link that does not expose their postcode
 **Plans**: 4 plans
 Plans:
-- [ ] 02-01-PLAN.md — Portal foundation: swappable accent token, CONTACT_PHONE + SHARE_TOKEN_SECRET env, responsive shell, jsdom test infra (PORT-06)
-- [ ] 02-02-PLAN.md — TDD: signed share-token codec + share-lookup (postcode-gate-free) + multiple-match candidate surfacing (PORT-05, PORT-08)
-- [ ] 02-03-PLAN.md — Result + error components: status/stepper/time-window/history/vehicle + distinct error states & chooser (PORT-02, PORT-03, PORT-04, PORT-05, PORT-07)
-- [ ] 02-04-PLAN.md — Wiring: POST server action, lookup form, signed share route, ShareBar, print stylesheet (PORT-01, PORT-06, PORT-08)
+- [x] 02-01-PLAN.md — Portal foundation: swappable accent token, CONTACT_PHONE + SHARE_TOKEN_SECRET env, responsive shell, jsdom test infra (PORT-06)
+- [x] 02-02-PLAN.md — TDD: signed share-token codec + share-lookup (postcode-gate-free) + multiple-match candidate surfacing (PORT-05, PORT-08)
+- [x] 02-03-PLAN.md — Result + error components: status/stepper/time-window/history/vehicle + distinct error states & chooser (PORT-02, PORT-03, PORT-04, PORT-05, PORT-07)
+- [x] 02-04-PLAN.md — Wiring: POST server action, lookup form, signed share route, ShareBar, print stylesheet (PORT-01, PORT-06, PORT-08)
 **UI hint**: yes
 
 ### Phase 3: Admin Dashboard
