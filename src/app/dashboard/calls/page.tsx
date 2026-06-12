@@ -36,7 +36,8 @@ function parseOutcome(value: string | undefined): CallRow['outcome'] | undefined
 export default async function CallHistoryPage({ searchParams }: Props) {
   const sp = await searchParams;
 
-  const page = Math.max(1, Number(sp.page ?? '1'));
+  const rawPage = Number(sp.page ?? '1');
+  const page = Number.isFinite(rawPage) && rawPage >= 1 ? Math.floor(rawPage) : 1;
   const pageSize = 25;
 
   const opts: CallListOptions = {
