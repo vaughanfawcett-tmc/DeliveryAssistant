@@ -55,7 +55,10 @@ interface FromBuilder {
 }
 
 interface UpdateBuilder {
-  eq(column: string, value: unknown): Promise<{ data: unknown; error: { message: string } | null }>;
+  eq(column: string, value: unknown): UpdateBuilder;
+  then<U>(
+    resolve: (v: { data: unknown; error: { message: string } | null }) => U,
+  ): Promise<U>;
 }
 
 export interface SupabaseLike {
@@ -202,6 +205,13 @@ export function createCallsRepo(client: SupabaseLike) {
 
   /**
    * Update a call row identified by platform_call_id.
+   *
+   * CR-04 ownership guard: the WHERE clause also requires call_type='customer' AND
+   * direction='inbound' to prevent a payload from overwriting a driver call row or
+   * a row belonging to a different call session. Supabase .update() returns no error
+   * when zero rows match, so a mismatched platformCallId silently no-ops rather than
+   * corrupting unrelated data.
+   *
    * Throws on error — mutations must not silently swallow failures (D-07).
    * Returns void: Supabase JS v2 .update() without .select() resolves to
    * { data: null, error: null } on success.
@@ -213,7 +223,9 @@ export function createCallsRepo(client: SupabaseLike) {
     const { error } = await client
       .from('calls')
       .update(patch)
-      .eq('platform_call_id', platformCallId);
+      .eq('platform_call_id', platformCallId)
+      .eq('call_type', 'customer')
+      .eq('direction', 'inbound');
     if (error) throw new Error(`[calls-repo] update failed: ${error.message}`);
   }
 

@@ -281,6 +281,71 @@ describe('getCallById', () => {
 });
 
 // ---------------------------------------------------------------------------
+// updateCall — CR-04 ownership guard
+// ---------------------------------------------------------------------------
+
+describe('updateCall', () => {
+  it('CR-04: WHERE clause includes call_type=customer and direction=inbound filters', async () => {
+    // Spy client that records the filters passed to .eq()
+    const eqCalls: Array<[string, unknown]> = [];
+    const updateClient = {
+      from: (_table: string) => ({
+        update: (_patch: object) => ({
+          eq: (col: string, val: unknown) => {
+            eqCalls.push([col, val]);
+            return {
+              eq: (col2: string, val2: unknown) => {
+                eqCalls.push([col2, val2]);
+                return {
+                  eq: (col3: string, val3: unknown) => {
+                    eqCalls.push([col3, val3]);
+                    return {
+                      then: (resolve: (v: { data: null; error: null }) => void) =>
+                        Promise.resolve({ data: null, error: null }).then(resolve),
+                    };
+                  },
+                };
+              },
+            };
+          },
+        }),
+      }),
+    };
+
+    const repo = createCallsRepo(updateClient as any);
+    await repo.updateCall('platform-call-123', { outcome: 'resolved' });
+
+    // Must filter on all three columns
+    expect(eqCalls).toContainEqual(['platform_call_id', 'platform-call-123']);
+    expect(eqCalls).toContainEqual(['call_type', 'customer']);
+    expect(eqCalls).toContainEqual(['direction', 'inbound']);
+  });
+
+  it('CR-04: updateCall with mismatched platformCallId does not throw (silent no-op — 0 rows updated)', async () => {
+    // Supabase returns { data: null, error: null } when 0 rows match — this is by design.
+    // The point is it does NOT overwrite unrelated rows.
+    const noMatchClient = {
+      from: (_table: string) => ({
+        update: (_patch: object) => ({
+          eq: (_col: string, _val: unknown) => ({
+            eq: (_col2: string, _val2: unknown) => ({
+              eq: (_col3: string, _val3: unknown) => ({
+                then: (resolve: (v: { data: null; error: null }) => void) =>
+                  Promise.resolve({ data: null, error: null }).then(resolve),
+              }),
+            }),
+          }),
+        }),
+      }),
+    };
+
+    const repo = createCallsRepo(noMatchClient as any);
+    // Should not throw even when 0 rows matched
+    await expect(repo.updateCall('nonexistent-id', { outcome: 'failed' })).resolves.toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // getDriverCallsForParent
 // ---------------------------------------------------------------------------
 
