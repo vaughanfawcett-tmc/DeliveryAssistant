@@ -8,6 +8,8 @@ interface Props {
   page: number;
   pageSize: number;
   hasActiveFilters?: boolean;
+  /** WR-06: serialised filter params (outcome, q, from, to) — merged with page on pagination links */
+  baseParams?: string;
 }
 
 // Semantic outcome badge colours — never use accent for status (UI-09)
@@ -48,7 +50,7 @@ function OutcomeBadge({ outcome }: { outcome: CallSummary['outcome'] }) {
   );
 }
 
-export function CallHistoryTable({ rows, total, page, pageSize, hasActiveFilters }: Props) {
+export function CallHistoryTable({ rows, total, page, pageSize, hasActiveFilters, baseParams }: Props) {
   // Empty states — exact UI-SPEC copy
   if (total === 0) {
     return (
@@ -73,6 +75,12 @@ export function CallHistoryTable({ rows, total, page, pageSize, hasActiveFilters
   const endItem = Math.min(page * pageSize, total);
   const hasPrev = page > 1;
   const hasNext = endItem < total;
+
+  // WR-06: build pagination hrefs that preserve active filter params.
+  const prevParams = new URLSearchParams(baseParams ?? '');
+  prevParams.set('page', String(page - 1));
+  const nextParams = new URLSearchParams(baseParams ?? '');
+  nextParams.set('page', String(page + 1));
 
   return (
     <div>
@@ -165,7 +173,7 @@ export function CallHistoryTable({ rows, total, page, pageSize, hasActiveFilters
         <div className="flex gap-2">
           {hasPrev ? (
             <Link
-              href={`?page=${page - 1}`}
+              href={`?${prevParams.toString()}`}
               className="text-sm text-zinc-600 px-3 py-1 border border-zinc-200 rounded hover:bg-zinc-50"
             >
               Previous
@@ -177,7 +185,7 @@ export function CallHistoryTable({ rows, total, page, pageSize, hasActiveFilters
           )}
           {hasNext ? (
             <Link
-              href={`?page=${page + 1}`}
+              href={`?${nextParams.toString()}`}
               className="text-sm text-zinc-600 px-3 py-1 border border-zinc-200 rounded hover:bg-zinc-50"
             >
               Next

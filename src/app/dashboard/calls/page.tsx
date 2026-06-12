@@ -52,6 +52,14 @@ export default async function CallHistoryPage({ searchParams }: Props) {
 
   const hasActiveFilters = !!(sp.outcome || sp.q || sp.from || sp.to);
 
+  // WR-06: build a serialised base param string that carries the active filters
+  // so CallHistoryTable can merge only the page change into pagination hrefs.
+  const baseParams = new URLSearchParams();
+  if (sp.outcome) baseParams.set('outcome', sp.outcome);
+  if (sp.q) baseParams.set('q', sp.q);
+  if (sp.from) baseParams.set('from', sp.from);
+  if (sp.to) baseParams.set('to', sp.to);
+
   return (
     <main className="px-4 py-8 lg:px-8">
       <h1 className="text-xl font-semibold text-zinc-900 mb-6">Call history</h1>
@@ -62,6 +70,7 @@ export default async function CallHistoryPage({ searchParams }: Props) {
         page={page}
         pageSize={pageSize}
         hasActiveFilters={hasActiveFilters}
+        baseParams={baseParams.toString()}
       />
     </main>
   );
