@@ -26,14 +26,18 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Tracking Portal
 
 - [ ] **PORT-01**: Customer can look up a delivery with tracking number + delivery postcode (submitted via POST — no tracking data in URLs)
-- [ ] **PORT-02**: Portal shows current status, plain-language description, estimated delivery date, and a visual milestone timeline
-- [ ] **PORT-03**: Portal shows the delivery time window ("between 09:00–11:00") when the consignment is out for delivery
-- [ ] **PORT-04**: Portal shows the full event/scan history in reverse-chronological order
+- [x] **PORT-02
+**: Portal shows current status, plain-language description, estimated delivery date, and a visual milestone timeline
+- [x] **PORT-03
+**: Portal shows the delivery time window ("between 09:00–11:00") when the consignment is out for delivery
+- [x] **PORT-04
+**: Portal shows the full event/scan history in reverse-chronological order
 - [x] **PORT-05
 **: Portal handles error states distinctly: not found, postcode mismatch, multiple matches (user picks from list), and API unavailable
 - [x] **PORT-06
 **: Portal is mobile-first responsive (status + ETA above the fold on a 375px viewport)
-- [ ] **PORT-07**: Portal shows vehicle/route details (reg number, route status) when available from the API
+- [x] **PORT-07
+**: Portal shows vehicle/route details (reg number, route status) when available from the API
 - [x] **PORT-08
 **: Customer can print or share the status page via a short-lived signed link (no postcode exposed)
 
