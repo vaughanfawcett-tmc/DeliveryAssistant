@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-06-12T10:32:12.153Z"
+status: executing
+stopped_at: Completed 02-01-PLAN.md (portal foundation)
+last_updated: "2026-06-12T10:43:29.332Z"
 last_activity: 2026-06-12
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 4
-  percent: 50
+  completed_plans: 5
+  percent: 63
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-11)
 
 **Core value:** A customer can find out where their delivery is — accurately, in under a minute, without a human — by web or by phone.
-**Current focus:** Phase 01 — foundation
+**Current focus:** Phase 02 — tracking-portal
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
-Status: Ready to plan
+Phase: 02 (tracking-portal) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-06-12
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 63%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██████████] 100%
 | Phase 01 P01 | 9 | 3 tasks | 13 files |
 | Phase 01 P02 | 12 | 3 tasks | 10 files |
 | Phase 01-foundation P04 | 3 | 3 tasks | 6 files |
+| Phase 02 P01 | 122 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Recent decisions affecting current work:
 - createTrackingService factory with optional mapStatusName dep enables postcode-gate test to verify mapStatusName NOT called on mismatch (T-01-13)
 - Multiple-matches logged under not_found bucket with code comment; multiple_matches surfaced to caller; disambiguation deferred to Phase 2
 - Lazy default service singleton in service.ts defers env/dependency access to first call, consistent with Plans 02 and 03 patterns
+- SHARE_TOKEN_SECRET uses .min(32) with 40-char dev default — never optional to prevent silently disabling HMAC signing
+- Global vitest environment stays node; jsdom per component test file via docblock (no cross-contamination)
+- Accent hex #2563eb lives only in globals.css :root; all components reference text-accent/bg-accent utilities
 
 ### Pending Todos
 
@@ -98,8 +102,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 2 context gathered
-Resume file: --resume-file
+Last session: 2026-06-12T10:43:29.327Z
+Stopped at: Completed 02-01-PLAN.md (portal foundation)
+Resume file: None
 
 **Planned Phase:** 02 (tracking-portal) — 4 plans — 2026-06-12T10:32:12.148Z

@@ -30,7 +30,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **PORT-03**: Portal shows the delivery time window ("between 09:00–11:00") when the consignment is out for delivery
 - [ ] **PORT-04**: Portal shows the full event/scan history in reverse-chronological order
 - [ ] **PORT-05**: Portal handles error states distinctly: not found, postcode mismatch, multiple matches (user picks from list), and API unavailable
-- [ ] **PORT-06**: Portal is mobile-first responsive (status + ETA above the fold on a 375px viewport)
+- [x] **PORT-06
+**: Portal is mobile-first responsive (status + ETA above the fold on a 375px viewport)
 - [ ] **PORT-07**: Portal shows vehicle/route details (reg number, route status) when available from the API
 - [ ] **PORT-08**: Customer can print or share the status page via a short-lived signed link (no postcode exposed)
 
