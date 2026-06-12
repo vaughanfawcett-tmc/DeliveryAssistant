@@ -27,13 +27,21 @@ function makeInsertClient(error: { message: string } | null): SupabaseLike {
 }
 
 function makeUpdateClient(error: { message: string } | null): SupabaseLike {
+  // updateCall chains three .eq() calls (platform_call_id, call_type, direction)
+  // before awaiting. Build a chainable stub that resolves on the third .eq().
+  const finalBuilder = {
+    then: (resolve: (v: { data: null; error: typeof error }) => void) =>
+      Promise.resolve({ data: null, error }).then(resolve),
+  };
+  const thirdEq = vi.fn().mockReturnValue(finalBuilder);
+  const secondEq = vi.fn().mockReturnValue({ eq: thirdEq });
+  const firstEq = vi.fn().mockReturnValue({ eq: secondEq });
+
   return {
     from: (_table: string) => ({
       select: vi.fn(),
       insert: vi.fn(),
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ data: null, error }),
-      }),
+      update: vi.fn().mockReturnValue({ eq: firstEq }),
       delete: vi.fn(),
     }),
   } as unknown as SupabaseLike;

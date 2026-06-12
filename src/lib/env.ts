@@ -34,12 +34,10 @@ const envSchema = z
     TWILIO_ACCOUNT_SID: optionalCredential,
     TWILIO_AUTH_TOKEN: optionalCredential,
     TWILIO_PHONE_NUMBER: optionalCredential,
-    // VOICE_WEBHOOK_SECRET: mirrors SHARE_TOKEN_SECRET — never optional so HMAC
-    // verification cannot be silently disabled (T-04-01)
-    VOICE_WEBHOOK_SECRET: z
-      .string()
-      .min(32)
-      .default('dev-only-insecure-voice-webhook-secret-change-me'),
+    // VOICE_WEBHOOK_SECRET: no default — app must fail to boot if absent (WR-05),
+    // matching the DASHBOARD_PASSWORD pattern. This prevents webhook HMAC from
+    // silently passing with a well-known dev secret when the variable is not set.
+    VOICE_WEBHOOK_SECRET: z.string().min(32),
     // Driver escalation hard limits (DRIV-02 / DRIV-04)
     DRIVER_CALL_MAX_DURATION_S: z.coerce.number().int().positive().default(180),
     DRIVER_CALL_MAX_RETRIES: z.coerce.number().int().nonnegative().default(2),

@@ -13,6 +13,8 @@ const VALID_ENV = {
   // Admin dashboard auth — required (no defaults)
   DASHBOARD_PASSWORD: 'test-staff-password',
   DASHBOARD_SESSION_SECRET: 'test-session-secret-at-least-32-chars-long',
+  // Voice webhook secret — required (no default, WR-05)
+  VOICE_WEBHOOK_SECRET: 'test-voice-webhook-secret-32chars-minimum-xx',
 };
 
 // Extend VALID_ENV with live-mode credentials (Phase 4 voice vars required when PALLEX_MOCK=false)
@@ -83,6 +85,15 @@ describe('parseEnv', () => {
         PALLEX_PASSWORD: '',
       })
     ).toThrow();
+  });
+
+  it('WR-05: throws when VOICE_WEBHOOK_SECRET is absent (no default — fail-loud like DASHBOARD_PASSWORD)', () => {
+    const { VOICE_WEBHOOK_SECRET: _, ...rest } = VALID_ENV;
+    expect(() => parseEnv(rest)).toThrow(/VOICE_WEBHOOK_SECRET/i);
+  });
+
+  it('WR-05: throws when VOICE_WEBHOOK_SECRET is shorter than 32 chars', () => {
+    expect(() => parseEnv({ ...VALID_ENV, VOICE_WEBHOOK_SECRET: 'tooshort' })).toThrow();
   });
 
   it('exposes all required env vars on the result object', () => {
