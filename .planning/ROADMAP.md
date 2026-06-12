@@ -82,7 +82,14 @@ Plans:
   4. When the API cannot provide a live ETA, the agent offers to contact the driver; after the customer agrees to hold, the agent calls the driver, receives the ETA, and relays it back — with hard limits on call duration, retries, and a logged outcome for every attempt
   5. Real-world noisy-environment audio (lorry cab / haulage yard) has been tested and STT accuracy is acceptable — or the platform has been switched to Retell AI — before live calls are accepted
   6. Live Pall-Ex credentials have passed a canary test and the system is running against the live Nexus API with all compliance steps complete (DPAs signed, transcript retention TTL set, Vercel Pro and Supabase Pro active)
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 04-01-PLAN.md — Foundation: voice/telephony env, recording_url migration, calls-repo writes + drivers getDriverById
+- [ ] 04-02-PLAN.md — Pure conversation state machine: disclosure, NATO read-back, DTMF, 3-attempt + on-demand handoff, never-invent (VOICE-01..08)
+- [ ] 04-03-PLAN.md — VoiceTelephonyAdapter interface + Mock + ElevenLabs/Twilio shell + MSW voice handlers
+- [ ] 04-04-PLAN.md — Signed voice webhooks/tools: lookup_consignment, request_human, call_started/ended persistence
+- [ ] 04-05-PLAN.md — Driver-escalation state machine + contact_driver tool with hard limits + per-attempt logging (DRIV-01..04)
+- [ ] 04-06-PLAN.md — Agent config-as-code, recording_url wiring, retention helper, production runbook (SC-5/SC-6 human-action)
 **UI hint**: yes
 
 ---
@@ -94,7 +101,7 @@ Plans:
 | 1. Foundation | 0/4 | Planned | - |
 | 2. Tracking Portal | 0/4 | Planned | - |
 | 3. Admin Dashboard | 0/4 | Planned | - |
-| 4. Voice Agent + Production | 0/? | Not started | - |
+| 4. Voice Agent + Production | 0/6 | Planned | - |
 
 ---
 
