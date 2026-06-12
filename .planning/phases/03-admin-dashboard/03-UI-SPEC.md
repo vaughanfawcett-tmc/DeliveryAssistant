@@ -58,17 +58,17 @@ Carries forward Phase 2 conventions exactly [codebase: StatusHeader.tsx, LookupF
 | Role | Size | Tailwind | Weight | Tailwind | Line Height | Usage |
 |------|------|----------|--------|----------|-------------|-------|
 | Body | 14px | text-sm | 400 regular | font-normal | 1.5 | Table cell content, transcript body text, helper text |
-| Label | 14px | text-sm | 500 medium | font-medium | 1.4 | Form labels, column headers, nav link text, filter labels |
+| Label | 14px | text-sm | 600 semibold | font-semibold | 1.4 | Form labels, column headers, nav link text, filter labels |
 | Heading | 20px | text-xl | 600 semibold | font-semibold | 1.25 | Page headings (Metrics, Call History, Drivers), modal titles |
 | Display | 28px | text-2xl | 600 semibold | font-semibold | 1.2 | Login page heading only |
 
 Secondary type roles:
 - Metric value (large stat): 32px / text-3xl / font-semibold — reserved for the 4 call metric numbers on the Metrics page.
-- Metric label (under stat): 12px / text-xs / font-medium / text-zinc-500 — "Today", "7 days", "30 days" period labels.
+- Metric label (under stat): 14px / text-sm / font-semibold / text-zinc-500 — "Today", "7 days", "30 days" period labels; text-zinc-500 provides visual distinction from body text at the same size.
 - Monospace (tracking refs, phone numbers, timestamps): font-mono (Geist Mono) / text-sm — call history table ref column, driver phone column, transcript timestamps.
-- Caption: 12px / text-xs / font-normal / text-zinc-400 — table pagination counts, recording duration, "last updated" notes.
+- Caption: 14px / text-sm / font-normal / text-zinc-400 — table pagination counts, recording duration, "last updated" notes; text-zinc-400 provides visual distinction from body text at the same size.
 
-Maximum declared sizes: 4 (14, 20, 28, 32). Maximum declared weights: 2 (regular 400 + semibold 600); medium 500 used only for labels/nav where Phase 2 used it.
+Maximum declared sizes: 4 (14, 20, 28, 32). Maximum declared weights: 2 (regular 400 + semibold 600).
 
 ---
 
@@ -118,7 +118,7 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 **Nav link states:**
 - Default: text-zinc-600, no background
 - Hover: text-zinc-900, bg-zinc-50
-- Active (current route): text-accent, border-l-2 border-accent, font-medium
+- Active (current route): text-accent, border-l-2 border-accent, font-semibold
 
 ### Login Page (ADMIN-01)
 
@@ -141,7 +141,7 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 **MetricCard** (×4)
 - White card, border border-zinc-200, rounded-xl, p-6
 - Metric value: text-3xl font-semibold text-zinc-900
-- Metric name: text-sm font-medium text-zinc-500 mt-1
+- Metric name: text-sm font-semibold text-zinc-500 mt-1
 - Cards: "Total received", "Answered", "Missed", "Success rate"
 - Grid: 2-column on ≥640px, 1-column on <640px, gap-4
 
@@ -156,14 +156,14 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 - Outcome select: "All outcomes" / "Resolved" / "Missed" / "Escalated" / "Failed"
 - Search input: placeholder "Search tracking reference…", debounced 300ms
 - Filter row: flex-wrap gap-3 on desktop, stacked on mobile
-- Active filter chip: bg-accent/10 text-accent text-xs font-medium rounded-full px-3 py-1 with × dismiss
+- Active filter chip: bg-accent/10 text-accent text-sm font-semibold rounded-full px-3 py-1 with × dismiss
 
 **CallHistoryTable**
 - Columns: Date/time | Duration | Tracking ref | Outcome | Caller (masked) | Action
 - Date/time: font-mono text-sm text-zinc-600
 - Duration: text-sm text-zinc-600 (e.g. "1m 42s")
 - Tracking ref: font-mono text-sm text-zinc-900
-- Outcome badge: rounded-full px-2 py-0.5 text-xs font-medium — green-600/green-100 (resolved), amber-600/amber-100 (missed), zinc-600/zinc-100 (escalated/failed)
+- Outcome badge: rounded-full px-2 py-0.5 text-sm font-semibold — green-600/green-100 (resolved), amber-600/amber-100 (missed), zinc-600/zinc-100 (escalated/failed)
 - Caller: font-mono text-sm text-zinc-500 (masked: last 4 digits, e.g. "••• ••• 1234")
 - Action: "View" link — text-accent text-sm underline
 - Row hover: bg-zinc-50
@@ -175,7 +175,7 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 - If table is empty AND no filters active: "No calls recorded yet. Voice agent data will appear here after Phase 4." text-sm text-zinc-500
 
 **Pagination:**
-- "Showing 1–25 of 47 calls" caption text-xs text-zinc-400
+- "Showing 1–25 of 47 calls" caption text-sm text-zinc-400
 - Previous / Next buttons: text-sm text-zinc-600, disabled:opacity-40
 - Page size: 25 rows default
 
@@ -183,11 +183,11 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 
 **CallDetail** — full-page route (not a modal, given transcript length)
 - Back link: "← Call history" text-accent text-sm — top-left
-- Metadata section: 2-column grid (date/time, duration, tracking ref, outcome, caller) — label text-xs text-zinc-500, value text-sm font-medium text-zinc-900
+- Metadata section: 2-column grid (date/time, duration, tracking ref, outcome, caller) — label text-sm text-zinc-500, value text-sm font-semibold text-zinc-900
 
 **TranscriptView** (ADMIN-04)
 - Scrollable panel, max-height 60vh on desktop, full height on mobile
-- Each turn: speaker label (text-xs font-medium text-zinc-500, "Agent" or "Customer") + timestamp (font-mono text-xs text-zinc-400) + message text (text-sm text-zinc-900 leading-relaxed)
+- Each turn: speaker label (text-sm font-semibold text-zinc-500, "Agent" or "Customer") + timestamp (font-mono text-sm text-zinc-400) + message text (text-sm text-zinc-900 leading-relaxed)
 - Agent turns: left-aligned, no background
 - Customer turns: left-aligned, bg-zinc-50 rounded-lg px-3 py-2
 - Empty state: "Transcript not available for this call." text-sm text-zinc-500
@@ -195,7 +195,7 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 **RecordingPlayer** (ADMIN-05)
 - Native HTML `<audio controls>` element — no custom player (simplest implementation, browser-native, accessible)
 - Wrapper: border border-zinc-200 rounded-lg p-4 bg-zinc-50
-- Title: "Call recording" text-sm font-medium text-zinc-700 mb-2
+- Title: "Call recording" text-sm font-semibold text-zinc-700 mb-2
 - Unavailable state: "Recording not yet available. Recordings will be stored for 30 days after the voice agent goes live." text-sm text-zinc-500
 
 **DriverCallSubLog** (ADMIN-07)
@@ -211,7 +211,7 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 - Phone: font-mono text-sm
 - Actions: "Edit" (text-accent text-sm) + "Deactivate"/"Activate" (text-zinc-600 text-sm) + "Delete" (text-red-600 text-sm)
 - Mobile: stacked cards (same collapse pattern as CallHistoryTable)
-- "Add driver" button: top-right on desktop, sticky bottom on mobile — bg-accent text-white rounded-full px-5 py-2 text-sm font-medium
+- "Add driver" button: top-right on desktop, sticky bottom on mobile — bg-accent text-white rounded-full px-5 py-2 text-sm font-semibold
 
 **Empty state (no drivers):**
 - Heading: "No drivers yet" text-base font-semibold text-zinc-900
@@ -224,15 +224,15 @@ All components are hand-authored to match Phase 2 conventions. No shadcn or thir
 - Fields: "Full name" (text input) + "Phone number" (text input, E.164 placeholder "+44 7911 123456")
 - Validation inline: red-600 text-sm below field, visible only after blur
 - E.164 validation: client-side regex + server-side zod refinement
-- Save button: full-width bg-accent text-white rounded-full h-11 font-medium
-- Cancel: text-zinc-500 text-sm underline below button
+- Save button: full-width bg-accent text-white rounded-full h-11 font-semibold
+- Cancel: text-zinc-500 text-sm underline below button — label "Discard changes"
 - Modal title: "Add driver" or "Edit driver" — text-xl font-semibold
 
 **DeleteConfirmDialog** (client component) (D-10)
 - Separate dialog, triggered by "Delete" action
 - Title: "Delete [driver name]?" — text-lg font-semibold text-zinc-900
 - Body: "This will permanently remove them from the system. This cannot be undone." text-sm text-zinc-600
-- Buttons: "Cancel" (border border-zinc-300 rounded-full px-5 py-2 text-sm text-zinc-700) + "Delete driver" (bg-red-600 text-white rounded-full px-5 py-2 text-sm font-medium)
+- Buttons: "Keep driver" (border border-zinc-300 rounded-full px-5 py-2 text-sm text-zinc-700) + "Delete driver" (bg-red-600 text-white rounded-full px-5 py-2 text-sm font-semibold)
 - Deactivate is reversible — no confirmation dialog; immediate with inline status toggle and toast feedback
 
 **Toast / feedback**
@@ -364,11 +364,11 @@ Inherits Tailwind v4 defaults. Admin-specific usage:
 | Phone field label | Phone number |
 | Phone field hint | E.164 format, e.g. +44 7911 123456 |
 | Save CTA | Save driver |
-| Cancel link | Cancel |
+| Cancel link (DriverModal) | Discard changes |
 | Delete confirm title | Delete [driver name]? |
 | Delete confirm body | This will permanently remove them from the system and cannot be undone. |
 | Delete confirm CTA | Delete driver |
-| Delete cancel | Cancel |
+| Delete cancel (DeleteConfirmDialog) | Keep driver |
 | Deactivate toast | Driver deactivated |
 | Activate toast | Driver activated |
 | Save toast | Driver saved |
@@ -407,6 +407,8 @@ Decisions made by this researcher with rationale, annotated by source.
 | UI-10 | Monospace font for tracking refs, phone numbers, timestamps | Geist Mono already loaded; tabular alignment aids scanning in tables | [codebase — font already present] |
 | UI-11 | 25-row pagination default | Balances page load and scrolling; short enough to paginate without virtual scroll complexity | [assumption] |
 | UI-12 | Period tabs (Today/7d/30d) rather than date-picker on Metrics | ADMIN-02 specifies exactly these three windows; a date picker is overkill for a fixed-window summary | [upstream ADMIN-02] |
+| UI-13 | 12px caption/label tier removed; text-zinc-400/500 provides visual hierarchy at 14px | Two weights (400/600) + colour differentiation is sufficient for distinction; eliminating the 12px tier keeps the type scale to 4 declared sizes and avoids the 5-size breach flagged by checker | [checker revision 2026-06-12] |
+| UI-14 | 500/medium weight removed; all label-weight elements promoted to 600/semibold | Three declared weights exceeded the 2-weight maximum; merging medium into semibold is unambiguous and consistent with Phase 2 semibold-for-emphasis convention | [checker revision 2026-06-12] |
 
 ---
 
