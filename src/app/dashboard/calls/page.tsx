@@ -14,6 +14,14 @@ interface Props {
   }>;
 }
 
+// WR-03: validate date strings before constructing Date objects.
+// new Date('arbitrary') produces an Invalid Date; calling .toISOString() on it throws RangeError.
+function parseDate(value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
 // Maps the outcome URL value (which may include display labels) to a CallRow outcome
 function parseOutcome(value: string | undefined): CallRow['outcome'] | undefined {
   if (!value) return undefined;
@@ -36,8 +44,8 @@ export default async function CallHistoryPage({ searchParams }: Props) {
     pageSize,
     outcome: parseOutcome(sp.outcome),
     search: sp.q || undefined,
-    since: sp.from ? new Date(sp.from) : undefined,
-    until: sp.to ? new Date(sp.to) : undefined,
+    since: parseDate(sp.from),
+    until: parseDate(sp.to),
   };
 
   const { rows, total } = await listCustomerCalls(opts);
