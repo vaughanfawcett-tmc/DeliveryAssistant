@@ -110,7 +110,7 @@ describe('lookupConsignment (via createTrackingService)', () => {
     );
   });
 
-  it('multiple matches: returns ok:false reason:multiple_matches, logs outcome', async () => {
+  it('multiple matches: returns ok:false reason:multiple_matches with candidates array containing safe detail', async () => {
     const nexusLookup = makeNexusLookup({
       ok: true,
       consignments: [FOUND_IN_TRANSIT, FOUND_NULL_ETA],
@@ -123,7 +123,29 @@ describe('lookupConsignment (via createTrackingService)', () => {
     if (result.ok) throw new Error('Expected ok:false');
     expect(result.reason).toBe('multiple_matches');
 
-    // Logged under not_found bucket (Phase 2 will add disambiguation)
+    // Must carry candidates (D-10)
+    if (result.reason !== 'multiple_matches') throw new Error('Expected multiple_matches');
+    expect(result.candidates).toHaveLength(2);
+
+    // First candidate maps FOUND_IN_TRANSIT
+    const first = result.candidates[0];
+    expect(first.consignmentNumber).toBe('PA-12345');
+    expect(first.delAddressTown).toBe('Derby');
+    expect(typeof first.plainStatus).toBe('string');
+    expect(first.plainStatus.length).toBeGreaterThan(0);
+
+    // Second candidate maps FOUND_NULL_ETA
+    const second = result.candidates[1];
+    expect(second.consignmentNumber).toBe('PA-99999');
+    expect(second.delAddressTown).toBe('Nottingham');
+
+    // Neither candidate has a postcode field (D-10: safe detail only)
+    expect(first).not.toHaveProperty('postcode');
+    expect(first).not.toHaveProperty('delAddressPostcode');
+    expect(second).not.toHaveProperty('postcode');
+    expect(second).not.toHaveProperty('delAddressPostcode');
+
+    // Logged under not_found bucket
     expect(logLookupSpy).toHaveBeenCalledOnce();
     expect(logLookupSpy).toHaveBeenCalledWith(
       expect.objectContaining({ success: false }),
@@ -142,5 +164,72 @@ describe('lookupConsignment (via createTrackingService)', () => {
     expect(result.consignment.estimatedDelDate).toBeNull();
     expect(result.consignment.startWindow).toBeNull();
     expect(result.consignment.endWindow).toBeNull();
+  });
+});
+
+describe('lookupForShare (via createTrackingService)', () => {
+  let logLookupSpy: ReturnType<typeof makeLogLookup>;
+
+  beforeEach(() => {
+    logLookupSpy = makeLogLookup();
+  });
+
+  it('single match: returns ok:true with mapped consignment and calls mapStatusName', async () => {
+    const mapStatusNameSpy = vi.fn().mockReturnValue({
+      stage: 'in_transit',
+      plainStatus: 'In transit',
+      description: 'Your parcel is on its way',
+    });
+    const nexusLookup = makeNexusLookup({ ok: true, consignments: [FOUND_IN_TRANSIT] });
+    const { lookupForShare } = createTrackingService({
+      nexusLookup,
+      logLookup: logLookupSpy,
+      mapStatusName: mapStatusNameSpy,
+    });
+
+    // FOUND_IN_TRANSIT has postcode DE1 1AA — we do NOT supply a postcode here;
+    // the whole point is that lookupForShare bypasses the postcode gate.
+    const result = await lookupForShare('PA-12345');
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok:true');
+    expect(result.consignment.consignmentNumber).toBe('PA-12345');
+
+    // mapStatusName MUST be called (status is shaped)
+    expect(mapStatusNameSpy).toHaveBeenCalledOnce();
+  });
+
+  it('postcode gate is NOT applied: a consignment whose postcode would not match still succeeds', async () => {
+    // FOUND_IN_TRANSIT has delAddressPostcode: DE1 1AA
+    // We verify lookupForShare does not check any postcode at all.
+    // If the postcode gate were applied with any postcode value, it might fail.
+    const nexusLookup = makeNexusLookup({ ok: true, consignments: [FOUND_IN_TRANSIT] });
+    const { lookupForShare } = createTrackingService({ nexusLookup, logLookup: logLookupSpy });
+
+    const result = await lookupForShare('PA-12345');
+    // Should succeed even though we never supplied a matching postcode
+    expect(result.ok).toBe(true);
+  });
+
+  it('nexus not_found: returns ok:false reason:not_found', async () => {
+    const nexusLookup = makeNexusLookup({ ok: false, error: 'not_found' });
+    const { lookupForShare } = createTrackingService({ nexusLookup, logLookup: logLookupSpy });
+
+    const result = await lookupForShare('PA-00000');
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected ok:false');
+    expect(result.reason).toBe('not_found');
+  });
+
+  it('nexus_unavailable: returns ok:false reason:api_error', async () => {
+    const nexusLookup = makeNexusLookup({ ok: false, error: 'nexus_unavailable' });
+    const { lookupForShare } = createTrackingService({ nexusLookup, logLookup: logLookupSpy });
+
+    const result = await lookupForShare('PA-12345');
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected ok:false');
+    expect(result.reason).toBe('api_error');
   });
 });
