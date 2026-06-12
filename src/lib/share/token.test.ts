@@ -8,17 +8,27 @@
  * - Tamper rejection: altered payload (different consignment number) with original sig -> null
  * - Malformed input: garbage, empty string, too many parts -> null (never throws)
  * - Expiry: expired token -> null
+ *
+ * Env strategy: set all required env vars at module scope BEFORE importing the
+ * token module so the env Proxy never encounters a cache miss with missing vars.
+ * The SHARE_TOKEN_SECRET is set to a >=32-char test value.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createShareToken, verifyShareToken } from './token';
+import { describe, it, expect } from 'vitest';
 
 const TEST_SECRET = 'test-secret-0123456789-abcdefghij-xyz';
 
+// Set required env vars BEFORE importing token (avoids env Proxy cache issue)
+process.env.SHARE_TOKEN_SECRET = TEST_SECRET;
+process.env.PALLEX_MOCK = 'true';
+process.env.PALLEX_BASE_URL = 'http://localhost:3001';
+process.env.SUPABASE_URL = 'http://localhost:54321';
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+process.env.UPSTASH_REDIS_REST_URL = 'http://localhost:6379';
+process.env.UPSTASH_REDIS_REST_TOKEN = 'test-redis-token';
+
+import { createShareToken, verifyShareToken } from './token';
+
 describe('share token codec', () => {
-  beforeEach(() => {
-    // Set a known test secret so the env Proxy parses correctly in tests
-    process.env.SHARE_TOKEN_SECRET = TEST_SECRET;
-  });
 
   // ---- Round-trip ------------------------------------------------------------
 
