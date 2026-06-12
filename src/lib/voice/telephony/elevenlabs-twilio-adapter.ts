@@ -129,11 +129,16 @@ export class ElevenLabsTwilioAdapter implements VoiceTelephonyAdapter {
   }
 
   async sendDtmf(callId: string, digits: string): Promise<void> {
-    // Twilio PlayDtmf via call update with TwiML
+    // Twilio PlayDtmf via call update with TwiML.
+    // Sanitise to the only characters Twilio <Play digits> accepts (0-9, *, #, w pause)
+    // before interpolating into the TwiML string — prevents attribute breakout / TwiML
+    // injection (toll fraud) from an untrusted digits value.
+    const safeDigits = digits.replace(/[^0-9*#w]/gi, '');
+
     const url = `${this.cfg.twilioBaseUrl}/2010-04-01/Accounts/${encodeURIComponent(this.cfg.twilioSid)}/Calls/${encodeURIComponent(callId)}.json`;
 
     const body = new URLSearchParams({
-      Twiml: `<Response><Play digits="${digits}"/></Response>`,
+      Twiml: `<Response><Play digits="${safeDigits}"/></Response>`,
     });
 
     const response = await fetch(url, {
