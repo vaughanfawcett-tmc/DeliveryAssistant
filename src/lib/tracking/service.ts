@@ -16,7 +16,7 @@
  * the Phase 2 portal and the Phase 4 voice tool.
  */
 
-import type { TrackingResult, MappedConsignment } from '../../types/tracking';
+import type { TrackingResult, MappedConsignment, MatchCandidate } from '../../types/tracking';
 import type { NexusLookupResult } from '../nexus/client';
 import type { LookupOutcome, LogLookupInput } from '../repositories/lookup-log';
 import { normalisePostcode, postcodesMatch } from './postcode';
@@ -78,12 +78,16 @@ export function createTrackingService(deps: TrackingServiceDeps) {
       return { ok: false, reason: 'not_found' };
     }
 
-    // Step 3: Multiple matches — no auto-pick (T-01-15); log under not_found bucket
-    // until Phase 2 adds disambiguation (multiple_matches surfaced to caller)
+    // Step 3: Multiple matches — surface safe candidate detail for the chooser (D-10, PORT-05).
+    // Log under not_found bucket; no auto-pick (T-01-15).
     if (nexusResult.consignments.length > 1) {
-      // multiple_matches surfaced to caller; logged under not_found bucket until Phase 2 adds disambiguation
+      const candidates: MatchCandidate[] = nexusResult.consignments.map((c) => ({
+        consignmentNumber: c.consignmentNumber,
+        delAddressTown: c.delAddressTown,
+        plainStatus: mapStatusName(c.status.name).plainStatus,
+      }));
       await logLookup({ trackingRef, postcode: normalisedPostcode, success: false, outcome: 'not_found' });
-      return { ok: false, reason: 'multiple_matches' };
+      return { ok: false, reason: 'multiple_matches', candidates };
     }
 
     const consignment = nexusResult.consignments[0];
@@ -114,7 +118,49 @@ export function createTrackingService(deps: TrackingServiceDeps) {
     return { ok: true, consignment: mapped };
   }
 
-  return { lookupConsignment };
+  /**
+   * Look up a consignment by consignment number WITHOUT the postcode gate.
+   *
+   * This path is used when re-fetching status for a share/print link (PORT-08,
+   * D-12). The signed token that produced this call IS the authorisation — it was
+   * only minted server-side after a successful postcode-gated lookup, so there is
+   * no need to re-prompt for or verify the postcode here.
+   *
+   * On a single match, shapes the status via mapStatusName and returns ok:true.
+   * On not_found / nexus_unavailable, returns the matching failure reason.
+   * Does not log (a share re-fetch is not a new customer lookup event).
+   */
+  async function lookupForShare(consignmentNumber: string): Promise<TrackingResult> {
+    const nexusResult = await nexusLookup(consignmentNumber);
+
+    if (!nexusResult.ok) {
+      if (nexusResult.error === 'nexus_unavailable') {
+        return { ok: false, reason: 'api_error' };
+      }
+      return { ok: false, reason: 'not_found' };
+    }
+
+    // For a share lookup, take the first consignment (the token already identifies it)
+    const consignment = nexusResult.consignments[0];
+
+    // Shape status — NO postcode gate (signed token is the authorisation)
+    const { stage, plainStatus, description } = mapStatusName(consignment.status.name);
+
+    const mapped: MappedConsignment = {
+      consignmentNumber: consignment.consignmentNumber,
+      plainStatus,
+      description,
+      currentStage: stage,
+      estimatedDelDate: consignment.estimatedDelDate,
+      startWindow: consignment.startWindow,
+      endWindow: consignment.endWindow,
+      routeDetails: consignment.routeDetails,
+    };
+
+    return { ok: true, consignment: mapped };
+  }
+
+  return { lookupConsignment, lookupForShare };
 }
 
 // ---------------------------------------------------------------------------
@@ -149,4 +195,19 @@ export async function lookupConsignment(input: {
 }): Promise<TrackingResult> {
   const service = await getDefaultService();
   return service.lookupConsignment(input);
+}
+
+/**
+ * Re-fetch a consignment status by consignment number, WITHOUT the postcode gate.
+ *
+ * Used by the share/print page (PORT-08, D-12): the signed token is the
+ * authorisation; the postcode was already verified when the original share link
+ * was minted.
+ *
+ * @param consignmentNumber  The consignment number encoded in the verified share token
+ * @returns  TrackingResult — ok:true with mapped consignment, or ok:false with reason
+ */
+export async function lookupForShare(consignmentNumber: string): Promise<TrackingResult> {
+  const service = await getDefaultService();
+  return service.lookupForShare(consignmentNumber);
 }
