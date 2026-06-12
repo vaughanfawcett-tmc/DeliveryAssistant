@@ -13,6 +13,8 @@ const envSchema = z
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     UPSTASH_REDIS_REST_URL: z.string().url(),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+    CONTACT_PHONE: z.string().min(1).default('+44 000 000 0000'),
+    SHARE_TOKEN_SECRET: z.string().min(32).default('dev-only-insecure-share-secret-change-me'),
   })
   .refine(
     (data) => {
