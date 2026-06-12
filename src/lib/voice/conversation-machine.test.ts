@@ -119,6 +119,30 @@ describe('Conversation machine — VOICE-05: 3-attempt escalation', () => {
     const { state } = reduce(captured, { type: 'confirm', yes: true });
     expect(state.phase).toBe('awaiting_postcode');
   });
+
+  it('WR-03: attempts counter resets to 0 when tracking_ref confirmed and moving to postcode', () => {
+    const started = reduce(initialState, { type: 'call_started' }).state;
+
+    // 2 failed tracking_ref attempts
+    const cap1 = reduce(started, { type: 'utterance', text: 'PA000001' }).state;
+    const rej1 = reduce(cap1, { type: 'confirm', yes: false }).state;
+    expect(rej1.attempts).toBe(1);
+
+    const cap2 = reduce(rej1, { type: 'utterance', text: 'PA000002' }).state;
+    const rej2 = reduce(cap2, { type: 'confirm', yes: false }).state;
+    expect(rej2.attempts).toBe(2);
+
+    // Now confirm the tracking ref — attempts must reset for postcode
+    const cap3 = reduce(rej2, { type: 'utterance', text: 'PA000002' }).state;
+    const { state: postcode } = reduce(cap3, { type: 'confirm', yes: true });
+    expect(postcode.phase).toBe('awaiting_postcode');
+    expect(postcode.attempts).toBe(0); // reset for postcode capture
+
+    // A single postcode rejection should increment from 0, not from 2
+    const pc1 = reduce(postcode, { type: 'utterance', text: 'DE1 2AB' }).state;
+    const { state: rejected } = reduce(pc1, { type: 'confirm', yes: false });
+    expect(rejected.attempts).toBe(1); // per-field: starts from 0
+  });
 });
 
 describe('Conversation machine — VOICE-06: On-demand human handoff', () => {

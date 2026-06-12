@@ -215,7 +215,10 @@ export function reduce(
               'Agent', prompt,
             );
             return {
-              state: { ...state, phase: 'awaiting_postcode', confirmingField: undefined, transcript },
+              // WR-03: reset attempts counter when moving to postcode capture.
+              // VOICE-05 "3 capture failures" is interpreted as per-field: 3 failures
+              // on tracking_ref before handoff, and a fresh 3 for postcode capture.
+              state: { ...state, phase: 'awaiting_postcode', confirmingField: undefined, attempts: 0, transcript },
               actions: [agentSay(prompt)],
             };
           }
