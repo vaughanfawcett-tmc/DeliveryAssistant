@@ -109,7 +109,7 @@ export function reduce(
         const transcript = addTurn(state.transcript, 'Agent', DISCLOSURE);
         return {
           state: { ...state, phase: 'awaiting_tracking', transcript },
-          actions: [{ type: 'say', text: DISCLOSURE }],
+          actions: [agentSay(DISCLOSURE)],
         };
       }
       return noOp(state);
