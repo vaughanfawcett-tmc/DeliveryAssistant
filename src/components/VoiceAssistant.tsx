@@ -8,6 +8,61 @@ interface Props {
   agentId: string;
 }
 
+interface LookupResponse {
+  ok?: boolean;
+  reason?: string;
+  consignmentNumber?: string;
+  plainStatus?: string;
+  description?: string;
+  estimatedDelDate?: string | null;
+  startWindow?: string | null;
+  endWindow?: string | null;
+}
+
+function formatDate(iso?: string | null): string {
+  if (!iso) return '';
+  try {
+    return new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  } catch {
+    return iso;
+  }
+}
+
+/** Turn the lookup response into a single, speech-ready sentence for the agent. */
+function describeLookup(data: LookupResponse): string {
+  if (!data || data.ok !== true) {
+    switch (data?.reason) {
+      case 'postcode_mismatch':
+        return "I found that consignment, but the postcode doesn't match our records. Could you double-check the delivery postcode for me?";
+      case 'not_found':
+        return "I'm sorry, I couldn't find a delivery with those details. Could you double-check the consignment number and postcode?";
+      case 'multiple_matches':
+        return 'I found more than one delivery matching that. Could you read me the full consignment number?';
+      default:
+        return "I'm sorry, I can't retrieve delivery information right now due to a system issue. Would you like me to put you through to a colleague?";
+    }
+  }
+
+  const parts: string[] = [
+    `Here's the latest on consignment ${data.consignmentNumber}: ${data.description ?? data.plainStatus}.`,
+  ];
+  if (data.startWindow && data.endWindow) {
+    const day = formatDate(data.estimatedDelDate);
+    parts.push(
+      `It's expected between ${data.startWindow} and ${data.endWindow}${day ? ` on ${day}` : ''}.`,
+    );
+  } else if (data.estimatedDelDate) {
+    parts.push(`The estimated delivery date is ${formatDate(data.estimatedDelDate)}.`);
+  } else {
+    parts.push("We don't have a confirmed delivery time just yet.");
+  }
+  return parts.join(' ');
+}
+
 /**
  * In-browser voice agent demo. Talks to the public ElevenLabs Derby Aggregates agent
  * over WebRTC and answers its `lookup_consignment` client-tool calls by hitting
@@ -21,9 +76,12 @@ function VoiceAssistantInner({ agentId }: Props) {
   const conversation = useConversation({
     clientTools: {
       // The agent calls this once it has captured + confirmed both fields.
+      // IMPORTANT: return a plain, speech-ready SENTENCE — not raw JSON. The
+      // agent reads the returned string back verbatim, so a clean sentence is
+      // far more reliable than asking the LLM to parse JSON fields.
       lookup_consignment: async (params: Record<string, unknown>) => {
-        const trackingRef = String(params.trackingRef ?? '');
-        const postcode = String(params.postcode ?? '');
+        const trackingRef = String(params.trackingRef ?? '').trim();
+        const postcode = String(params.postcode ?? '').trim();
         setLastLookup(`Looking up ${trackingRef} / ${postcode}…`);
         try {
           const res = await fetch('/api/voice/demo_lookup', {
@@ -32,19 +90,20 @@ function VoiceAssistantInner({ agentId }: Props) {
             body: JSON.stringify({ trackingRef, postcode }),
           });
           const data = await res.json();
-          setLastLookup(
-            data.ok
-              ? `${trackingRef}: ${data.plainStatus}`
-              : `${trackingRef}: ${data.reason}`,
-          );
-          // The tool result is fed back to the agent as a string it reads from.
-          return JSON.stringify(data);
+          const spoken = describeLookup(data);
+          setLastLookup(spoken);
+          return spoken;
         } catch {
-          return JSON.stringify({ ok: false, reason: 'api_error' });
+          return "I'm sorry, I couldn't reach the delivery system just now. You can try again in a moment, or I can put you through to a colleague.";
         }
       },
     },
     onError: (message: string) => setError(message),
+    onDisconnect: () => setLastLookup(null),
+    // Surfaces in the browser console for diagnosis if anything stalls.
+    onDebug: (info: unknown) => console.debug('[voice]', info),
+    onUnhandledClientToolCall: (call: unknown) =>
+      console.warn('[voice] unhandled tool call', call),
   });
 
   const status = conversation.status;

@@ -63,7 +63,7 @@ const body = {
       language: 'en',
       prompt: {
         prompt: agentConfig.system_prompt,
-        llm: 'gemini-2.0-flash-001',
+        llm: 'gpt-4o-mini',
         temperature: 0.3,
         tools: [lookupTool],
         knowledge_base: [
