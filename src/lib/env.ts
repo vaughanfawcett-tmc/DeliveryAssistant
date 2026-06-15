@@ -90,7 +90,14 @@ export type Env = z.infer<typeof envSchema>;
  * Use this directly in tests to avoid module-cache issues.
  */
 export function parseEnv(source: Record<string, string | undefined>): Env {
-  const result = envSchema.safeParse(source);
+  // Trim whitespace from every value before validation. Dashboard paste (Vercel,
+  // etc.) routinely introduces a stray leading/trailing space — e.g. PALLEX_MOCK
+  // = "true " — which would otherwise fail strict enum/url/length checks.
+  const trimmed: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(source)) {
+    trimmed[key] = typeof value === 'string' ? value.trim() : value;
+  }
+  const result = envSchema.safeParse(trimmed);
   if (!result.success) {
     const issues = result.error.issues
       .map((issue) => {
