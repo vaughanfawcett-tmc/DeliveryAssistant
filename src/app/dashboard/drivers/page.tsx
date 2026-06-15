@@ -2,6 +2,11 @@ import { listDrivers } from '@/lib/repositories/drivers-repo';
 import { DriverList } from '@/components/admin/DriverList';
 import { maskPhone } from '@/lib/admin/mask';
 
+// Admin page backed by live DB + env — must render per request, never be
+// statically prerendered at build (which would (a) require env at build time
+// and (b) bake in an empty driver list). This was failing the Vercel build.
+export const dynamic = 'force-dynamic';
+
 export default async function DriversPage() {
   const drivers = await listDrivers();
 
