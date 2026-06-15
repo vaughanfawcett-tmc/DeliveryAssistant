@@ -45,6 +45,29 @@ export const redisTokenStore: TokenStore = {
 };
 
 /**
+ * In-memory TokenStore — used in mock mode (PALLEX_MOCK=true) so the app is
+ * fully demonstrable without standing up a local Upstash Redis instance.
+ * Mirrors the Redis store's get/set + TTL semantics with a process-local Map.
+ * Never used when PALLEX_MOCK is false (production always uses redisTokenStore).
+ */
+const _memStore = new Map<string, { value: string; expiresAt: number }>();
+
+export const inMemoryTokenStore: TokenStore = {
+  async get(key: string): Promise<string | null> {
+    const entry = _memStore.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt <= Date.now()) {
+      _memStore.delete(key);
+      return null;
+    }
+    return entry.value;
+  },
+  async set(key: string, value: string, ttlSeconds: number): Promise<void> {
+    _memStore.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
+  },
+};
+
+/**
  * Direct Redis client export — only use this where you need Redis beyond
  * the TokenStore interface (e.g. for consignment caching in a future plan).
  */

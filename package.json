@@ -13,11 +13,14 @@
     "seed": "tsx src/lib/seed/seed-calls.ts"
   },
   "dependencies": {
+    "@elevenlabs/react": "^1.6.7",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@upstash/redis": "latest",
     "date-fns": "^3",
     "iron-session": "^8.0.4",
+    "lucide-react": "^1.18.0",
+    "maplibre-gl": "^5.24.0",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",

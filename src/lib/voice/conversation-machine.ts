@@ -1,5 +1,5 @@
 /**
- * Pure conversation state machine for the Derby Aggs voice agent.
+ * Pure conversation state machine for the Derby Aggregates voice agent.
  *
  * Architecture: reducer pattern — (state, event) -> { state, actions }
  * - No I/O, no Date.now(), no side effects, no module-level state.

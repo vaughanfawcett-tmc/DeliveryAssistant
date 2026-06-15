@@ -59,12 +59,15 @@ let _breaker: ((...args: [string]) => Promise<NexusLookupResult>) | undefined;
 
 function getTokenManager(): ReturnType<typeof createTokenManager> {
   if (!_tokenManager) {
-    // Use injected store if set (for tests), otherwise lazy Redis
+    // Use injected store if set (for tests), otherwise lazy Redis.
+    // In mock mode use an in-memory store so the app is demonstrable without
+    // a running Upstash Redis (production always uses redisTokenStore).
     if (!_tokenStore) {
       // Lazy Redis import to avoid env access at module load time
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { redisTokenStore } = require('../redis') as typeof import('../redis');
-      _tokenStore = redisTokenStore;
+      const { redisTokenStore, inMemoryTokenStore } = require('../redis') as typeof import('../redis');
+      _tokenStore =
+        process.env.PALLEX_MOCK === 'true' ? inMemoryTokenStore : redisTokenStore;
     }
     // env Proxy defers parsing to first property access — safe at call time
     _tokenManager = createTokenManager(

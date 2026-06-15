@@ -37,7 +37,7 @@ export function AdminShell({ children }: Props) {
     <div className="flex flex-col h-full">
       {/* Wordmark */}
       <div className="px-4 py-6">
-        <span className="text-xl font-semibold text-zinc-900">Derby Aggs</span>
+        <span className="text-xl font-semibold text-zinc-900">Derby Aggregates</span>
       </div>
 
       {/* Nav */}
@@ -119,7 +119,7 @@ export function AdminShell({ children }: Props) {
               />
             </svg>
           </button>
-          <span className="text-base font-semibold text-zinc-900">Derby Aggs</span>
+          <span className="text-base font-semibold text-zinc-900">Derby Aggregates</span>
         </header>
 
         {/* Page content */}

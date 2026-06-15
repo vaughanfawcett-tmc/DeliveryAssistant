@@ -1,5 +1,7 @@
 import type { MappedConsignment } from '@/types/tracking';
+import { getDeliveryGeo } from '@/lib/tracking/demo-geo';
 import { StatusHeader } from './StatusHeader';
+import { DeliveryMap } from './DeliveryMap';
 import { MilestoneStepper } from './MilestoneStepper';
 import { TimeWindow } from './TimeWindow';
 import { EventHistory } from './EventHistory';
@@ -11,10 +13,21 @@ interface Props {
 }
 
 export function TrackingResult({ consignment }: Props) {
+  const hasMap = getDeliveryGeo(consignment.consignmentNumber) !== null;
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-md">
       {/* Above fold: status + ETA + milestone — PORT-02, D-07 */}
       <StatusHeader consignment={consignment} />
+
+      {/* Live map — the focal "where is it" view (demo consignments only). */}
+      {hasMap && (
+        <DeliveryMap
+          consignmentNumber={consignment.consignmentNumber}
+          currentStage={consignment.currentStage}
+        />
+      )}
+
       <MilestoneStepper currentStage={consignment.currentStage} />
 
       {/* Time window — PORT-03: only when out_for_delivery and both window times are present */}

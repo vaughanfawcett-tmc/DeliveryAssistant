@@ -90,7 +90,7 @@ function randomPhone(): string {
 
 const TRANSCRIPTS = [
   JSON.stringify([
-    { speaker: 'agent', text: 'Thank you for calling Derby Aggs delivery tracking. How can I help?', ts: 0 },
+    { speaker: 'agent', text: 'Thank you for calling Derby Aggregates delivery tracking. How can I help?', ts: 0 },
     { speaker: 'customer', text: "Hi, I'm trying to track my delivery, number PA123456.", ts: 4 },
     { speaker: 'agent', text: 'Of course. Can you confirm your delivery postcode?', ts: 8 },
     { speaker: 'customer', text: 'DE1 1AA', ts: 11 },
@@ -98,7 +98,7 @@ const TRANSCRIPTS = [
     { speaker: 'customer', text: 'Great, thank you!', ts: 19 },
   ]),
   JSON.stringify([
-    { speaker: 'agent', text: "Derby Aggs delivery tracking. What's your tracking reference?", ts: 0 },
+    { speaker: 'agent', text: "Derby Aggregates delivery tracking. What's your tracking reference?", ts: 0 },
     { speaker: 'customer', text: 'It is PA987654.', ts: 3 },
     { speaker: 'agent', text: 'And your delivery postcode please?', ts: 6 },
     { speaker: 'customer', text: 'NG1 5AB', ts: 9 },
@@ -106,7 +106,7 @@ const TRANSCRIPTS = [
     { speaker: 'customer', text: 'Perfect, many thanks.', ts: 17 },
   ]),
   JSON.stringify([
-    { speaker: 'agent', text: 'Hello, Derby Aggs tracking. How can I help you today?', ts: 0 },
+    { speaker: 'agent', text: 'Hello, Derby Aggregates tracking. How can I help you today?', ts: 0 },
     { speaker: 'customer', text: 'My delivery was due yesterday but nothing has arrived.', ts: 4 },
     { speaker: 'agent', text: "I'm sorry to hear that. Can you give me your tracking number?", ts: 8 },
     { speaker: 'customer', text: 'PA555444.', ts: 11 },
@@ -115,13 +115,13 @@ const TRANSCRIPTS = [
     { speaker: 'agent', text: 'I can see your delivery is at the depot and has been rescheduled for tomorrow. A driver will attempt delivery before noon.', ts: 18 },
   ]),
   JSON.stringify([
-    { speaker: 'agent', text: 'Derby Aggs delivery line. How can I help?', ts: 0 },
+    { speaker: 'agent', text: 'Derby Aggregates delivery line. How can I help?', ts: 0 },
     { speaker: 'customer', text: 'Can you tell me if my parcel has left the depot?', ts: 3 },
     { speaker: 'agent', text: 'Sure, what is your tracking reference?', ts: 6 },
     { speaker: 'customer', text: 'PA112233.', ts: 8 },
     { speaker: 'agent', text: 'Postcode?', ts: 10 },
     { speaker: 'customer', text: 'M1 3DE', ts: 12 },
-    { speaker: 'agent', text: 'Yes, your consignment left the Derby Aggs depot at 7:45 this morning and is currently in transit.', ts: 15 },
+    { speaker: 'agent', text: 'Yes, your consignment left the Derby Aggregates depot at 7:45 this morning and is currently in transit.', ts: 15 },
   ]),
   JSON.stringify([
     { speaker: 'agent', text: 'Thank you for calling. What is your tracking number?', ts: 0 },
@@ -225,7 +225,7 @@ for (const parent of parentCalls) {
       outcome: 'resolved',
       tracking_ref: null,
       transcript: JSON.stringify([
-        { speaker: 'agent', text: 'Hi, this is the Derby Aggs tracking system calling. Can you give a live update on delivery PA555?', ts: 0 },
+        { speaker: 'agent', text: 'Hi, this is the Derby Aggregates tracking system calling. Can you give a live update on delivery PA555?', ts: 0 },
         { speaker: 'driver', text: "I'm about 20 minutes away, should be with the customer by 2pm.", ts: 5 },
       ]),
       disconnection_reason: null,

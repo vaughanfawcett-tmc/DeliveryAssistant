@@ -10,7 +10,7 @@ import type { VoiceAction } from './types';
  * - This is the FIRST thing said on every call — enforced structurally via openingTurn().
  */
 export const DISCLOSURE =
-  "Hello! I'm an automated AI assistant for Derby Aggs. " +
+  "Hello! I'm an automated AI assistant for Derby Aggregates. " +
   'This call is being recorded for quality and training purposes. ' +
   "I'm here to help you track your delivery — let's get started. " +
   'Could you please tell me your consignment number?';

@@ -66,7 +66,7 @@ export const TOOL_PATHS = [
 // ---------------------------------------------------------------------------
 
 /**
- * System prompt for the Derby Aggs delivery-tracking voice agent.
+ * System prompt for the Derby Aggregates delivery-tracking voice agent.
  *
  * Encodes:
  *  - Capture + NATO read-back + confirm rule (VOICE-02)
@@ -75,7 +75,7 @@ export const TOOL_PATHS = [
  *  - On-demand "0" / "agent" handoff (VOICE-06)
  *  - Never-invent-data / only state information returned by the API (VOICE-08)
  */
-const SYSTEM_PROMPT = `You are an automated AI customer-service agent for Derby Aggs, a freight and haulage company. You help callers track their deliveries by looking up consignment status through our secure backend tools.
+const SYSTEM_PROMPT = `You are an automated AI customer-service agent for Derby Aggregates, a freight and haulage company. You help callers track their deliveries by looking up consignment status through our secure backend tools.
 
 ## Role and Constraints
 

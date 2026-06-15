@@ -8,7 +8,7 @@ export function LoginForm() {
 
   return (
     <div className="max-w-sm w-full border border-zinc-200 rounded-xl p-8 bg-background">
-      <h1 className="text-xl font-semibold text-zinc-900 mb-6">Derby Aggs — Staff login</h1>
+      <h1 className="text-xl font-semibold text-zinc-900 mb-6">Derby Aggregates — Staff login</h1>
       <form action={formAction} className="flex flex-col gap-4">
         <div>
           <label

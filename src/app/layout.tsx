@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Derby Aggs — Track your delivery",
+  title: "Derby Aggregates — Track your delivery",
   description: "Track your Pall-Ex delivery — enter your tracking number and delivery postcode.",
 };
 

@@ -141,7 +141,13 @@ export function createBreaker<A extends unknown[], R>(
       const result = await callWithTimeout(...args);
       recordSuccess();
       return result;
-    } catch {
+    } catch (err) {
+      // The breaker deliberately swallows errors (returns fallback, never re-throws
+      // — Pitfall 9). Set BREAKER_DEBUG to surface the underlying cause when
+      // diagnosing why calls fall through to nexus_unavailable.
+      if (process.env.BREAKER_DEBUG) {
+        console.error('[breaker] swallowed error:', (err as Error)?.message);
+      }
       recordFailure();
       // If the failure just opened the circuit, that's handled above on next call.
       // Return fallback — never re-throw (PITFALLS.md Pitfall 9 / T-01-06).

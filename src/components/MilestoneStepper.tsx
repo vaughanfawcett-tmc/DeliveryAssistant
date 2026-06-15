@@ -26,14 +26,14 @@ export function MilestoneStepper({ currentStage }: Props) {
         return (
           <li key={stage} className="flex flex-col items-center flex-1 text-center">
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                ${done ? 'bg-accent text-white' : 'bg-zinc-200 text-zinc-400'}`}
+              className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors
+                ${active ? 'bg-accent text-white ring-4 ring-accent/15' : done ? 'bg-accent text-white' : 'bg-slate-100 text-slate-400'}`}
             >
               {done ? '✓' : idx + 1}
             </div>
             <span
-              className={`mt-1 text-[10px] leading-tight
-                ${active ? 'text-accent font-semibold' : done ? 'text-zinc-700' : 'text-zinc-400'}`}
+              className={`mt-1.5 text-[10px] leading-tight
+                ${active ? 'font-semibold text-accent' : done ? 'text-slate-600' : 'text-slate-400'}`}
             >
               {LABELS[stage]}
             </span>
