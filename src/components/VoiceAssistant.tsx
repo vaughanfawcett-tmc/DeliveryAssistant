@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ConversationProvider, useConversation } from '@elevenlabs/react';
+
+/** Auto-hang-up delay once the agent signals the conversation is finished. */
+const END_CALL_DELAY_MS = 2000;
 
 interface Props {
   /** ElevenLabs agent id — read server-side from env and passed in. */
@@ -73,8 +76,25 @@ function VoiceAssistantInner({ agentId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [lastLookup, setLastLookup] = useState<string | null>(null);
 
+  // Hold the live endSession fn + the pending auto-hang-up timer in refs so the
+  // end_call client tool (defined below, before `conversation` exists) can reach
+  // them without a stale closure.
+  const endSessionRef = useRef<(() => void) | null>(null);
+  const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const conversation = useConversation({
     clientTools: {
+      // ElevenLabs calls this when the agent decides the conversation is over
+      // (the agent prompt instructs it to call end_call to wrap up). We hang up
+      // 2 seconds later so the agent's closing line finishes playing first.
+      end_call: async () => {
+        setLastLookup('Wrapping up — ending the call…');
+        if (endTimerRef.current) clearTimeout(endTimerRef.current);
+        endTimerRef.current = setTimeout(() => {
+          void endSessionRef.current?.();
+        }, END_CALL_DELAY_MS);
+        return 'Ending the call now. Thanks for calling Derby Aggregates — goodbye.';
+      },
       // The agent calls this once it has captured + confirmed both fields.
       // IMPORTANT: return a plain, speech-ready SENTENCE — not raw JSON. The
       // agent reads the returned string back verbatim, so a clean sentence is
@@ -99,12 +119,24 @@ function VoiceAssistantInner({ agentId }: Props) {
       },
     },
     onError: (message: string) => setError(message),
-    onDisconnect: () => setLastLookup(null),
+    onDisconnect: () => {
+      if (endTimerRef.current) clearTimeout(endTimerRef.current);
+      setLastLookup(null);
+    },
     // Surfaces in the browser console for diagnosis if anything stalls.
     onDebug: (info: unknown) => console.debug('[voice]', info),
     onUnhandledClientToolCall: (call: unknown) =>
       console.warn('[voice] unhandled tool call', call),
   });
+
+  // Keep the ref pointing at the current endSession fn for the end_call tool,
+  // and make sure any pending auto-hang-up timer is cleared on unmount.
+  endSessionRef.current = () => conversation.endSession();
+  useEffect(() => {
+    return () => {
+      if (endTimerRef.current) clearTimeout(endTimerRef.current);
+    };
+  }, []);
 
   const status = conversation.status;
   const connected = status === 'connected';
@@ -126,6 +158,7 @@ function VoiceAssistantInner({ agentId }: Props) {
   }
 
   function stop() {
+    if (endTimerRef.current) clearTimeout(endTimerRef.current);
     conversation.endSession();
     setLastLookup(null);
   }
