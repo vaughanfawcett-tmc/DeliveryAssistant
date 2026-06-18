@@ -19,7 +19,7 @@ interface Props {
   currentStage: MilestoneStage;
 }
 
-const ACCENT = '#2563eb';
+const ACCENT = '#009890'; // DSA brand teal — keep in sync with --accent in globals.css
 const MUTED = '#94a3b8'; // slate-400
 
 function boundsOf(geo: DeliveryGeo): [[number, number], [number, number]] {

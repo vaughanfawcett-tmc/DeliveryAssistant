@@ -3,7 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #0f172a; /* slate-900 — primary text */
-  --accent: #2563eb; /* blue-600 — single swappable brand token (D-02) */
+  --accent: #009890; /* Derbyshire Specialist Aggregates brand teal — single swappable brand token (D-02) */
+  --brand-gold: #f4bc13; /* DSA secondary brand accent (logo highlight) */
 
   /* shadcn-compatible neutral tokens (used by /components/ui/*) */
   --card: #ffffff;
@@ -13,13 +14,14 @@
   --muted: #f1f5f9; /* slate-100 */
   --muted-foreground: #64748b; /* slate-500 */
   --border: #e2e8f0; /* slate-200 */
-  --ring: #2563eb;
+  --ring: #009890; /* match brand accent */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
+  --color-brand-gold: var(--brand-gold);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
