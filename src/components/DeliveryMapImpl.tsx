@@ -1,5 +1,6 @@
 'use client';
 
+import type { StyleSpecification } from 'maplibre-gl';
 import type { MilestoneStage } from '@/types/tracking';
 import {
   getDeliveryGeo,
@@ -21,6 +22,34 @@ interface Props {
 
 const ACCENT = '#009890'; // DSA brand teal — keep in sync with --accent in globals.css
 const MUTED = '#94a3b8'; // slate-400
+
+/**
+ * Self-contained raster basemap (CARTO Voyager tiles).
+ *
+ * We deliberately use a single raster source instead of CARTO's vector
+ * `positron-gl-style`: the vector style depends on separately-fetched vector
+ * tiles + glyphs + sprite, and if any of those stall the map never fires its
+ * `load` event — leaving a permanently blank canvas with the loading spinner
+ * (exactly the "map doesn't show" symptom). A raster style is one image layer,
+ * so the map loads reliably and is unmistakably a map.
+ */
+const BASEMAP_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    carto: {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors, © CARTO',
+    },
+  },
+  layers: [{ id: 'carto', type: 'raster', source: 'carto' }],
+};
 
 function boundsOf(geo: DeliveryGeo): [[number, number], [number, number]] {
   const lngs = [geo.depot[0], geo.destination[0]];
@@ -45,6 +74,7 @@ export default function DeliveryMapImpl({
     <div className="relative h-64 w-full overflow-hidden rounded-2xl border border-border shadow-sm">
       <Map
         theme="light"
+        styles={{ light: BASEMAP_STYLE, dark: BASEMAP_STYLE }}
         bounds={boundsOf(geo)}
         fitBoundsOptions={{ padding: 56, maxZoom: 13 }}
         attributionControl={false}
