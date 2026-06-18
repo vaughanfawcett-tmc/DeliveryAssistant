@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { env } from '../env';
+import { KNOWN_CONSIGNMENTS } from '../../mocks/fixtures';
 import { createBreaker } from './circuit-breaker';
 import { createTokenManager, createDefaultHttpPost, type TokenStore } from './token-manager';
 
@@ -136,11 +137,58 @@ function getBreaker() {
 }
 
 /**
+ * Mock-mode lookup — serves fixtures directly, bypassing fetch/MSW entirely.
+ *
+ * MSW's fetch interception (started in instrumentation.ts) is reliable under
+ * `next dev`/`next start` and the test runner, but does NOT survive in Vercel's
+ * serverless runtime — each function invocation may run before/outside the
+ * instrumentation-registered interceptor, so the real fetch escapes the mock,
+ * hits the placeholder PALLEX_BASE_URL, fails, and the breaker returns
+ * nexus_unavailable (surfaced to the user as "Service unavailable").
+ *
+ * To make mock mode demonstrable on Vercel, short-circuit here and match the
+ * known fixtures directly. This MIRRORS the MSW handler in src/mocks/handlers.ts
+ * (prefix match on consignmentNumber, exact match on customerReference, the
+ * TRIGGER-503 downtime simulation) so dev, tests, and production behave
+ * identically. MSW remains the interception layer for the test suite.
+ */
+function mockLookup(searchTerm: string): NexusLookupResult {
+  if (!searchTerm) {
+    return { ok: false, error: 'not_found' };
+  }
+
+  // Downtime simulation — parity with the MSW handler's 503 trigger.
+  if (searchTerm === 'TRIGGER-503') {
+    return { ok: false, error: 'nexus_unavailable' };
+  }
+
+  const matches = KNOWN_CONSIGNMENTS.filter(
+    (c) =>
+      c.consignmentNumber.startsWith(searchTerm) ||
+      (c.customerReference !== null && c.customerReference === searchTerm),
+  );
+
+  if (matches.length === 0) {
+    return { ok: false, error: 'not_found' };
+  }
+
+  // Validate through the same zod schema the real path uses, so the returned
+  // shape (and type) is identical regardless of mock vs live.
+  const parsed = nexusConsignmentsArraySchema.safeParse(matches);
+  if (!parsed.success) {
+    return { ok: false, error: 'not_found' };
+  }
+
+  return { ok: true, consignments: parsed.data };
+}
+
+/**
  * Look up consignments by search term against the Pall-Ex Nexus API.
  *
- * - Authenticated: obtains (or reuses) a cached bearer token via the token manager.
- * - Resilient: wrapped in a circuit breaker; never throws to callers (T-01-06).
- * - Validated: Nexus response shape verified with zod before returning (T-01-07).
+ * - Mock mode (PALLEX_MOCK=true): served directly from fixtures — no fetch, no
+ *   MSW, no token/breaker — so it works in the Vercel serverless runtime.
+ * - Live mode: authenticated, circuit-breaker-wrapped, zod-validated HTTP call.
+ *   Never throws to callers (T-01-06); response shape verified with zod (T-01-07).
  *
  * @param searchTerm  Consignment number, customer reference, or other term
  *                    supported by GET /Consignments?searchTerm=
@@ -150,6 +198,9 @@ function getBreaker() {
 export async function getConsignmentsBySearchTerm(
   searchTerm: string,
 ): Promise<NexusLookupResult> {
+  if (env.PALLEX_MOCK) {
+    return mockLookup(searchTerm);
+  }
   return getBreaker()(searchTerm);
 }
 
