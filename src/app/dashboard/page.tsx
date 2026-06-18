@@ -1,5 +1,6 @@
 import { PeriodTabs } from '@/components/admin/PeriodTabs';
 import { MetricCard } from '@/components/admin/MetricCard';
+import { CoBrand } from '@/components/CoBrand';
 import { getMetrics } from '@/lib/repositories/calls-repo';
 import { getWindowStart, type Period } from '@/lib/admin/windows';
 
@@ -19,6 +20,11 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <div>
+      {/* Co-brand lockup — Derbyshire Specialist Aggregates × The AI Agency */}
+      <div className="mb-8 border-b border-zinc-200 pb-6">
+        <CoBrand />
+      </div>
+
       <h1 className="text-xl font-semibold text-zinc-900 mb-6">Metrics</h1>
       <PeriodTabs />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

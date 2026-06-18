@@ -30,10 +30,13 @@ export function TrackingResult({ consignment }: Props) {
 
       <MilestoneStepper currentStage={consignment.currentStage} />
 
-      {/* Time window — PORT-03: only when out_for_delivery and both window times are present */}
-      {consignment.currentStage === 'out_for_delivery' &&
-        consignment.startWindow &&
-        consignment.endWindow && (
+      {/* Estimated delivery window — shown whenever a window is known and the
+          parcel is still on its way (in transit / out for delivery). Hidden once
+          delivered or while only booked (no confirmed window). */}
+      {consignment.startWindow &&
+        consignment.endWindow &&
+        (consignment.currentStage === 'in_transit' ||
+          consignment.currentStage === 'out_for_delivery') && (
           <TimeWindow start={consignment.startWindow} end={consignment.endWindow} />
         )}
 

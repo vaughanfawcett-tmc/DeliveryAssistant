@@ -1,3 +1,5 @@
+import { PoweredBy } from './PoweredBy';
+
 interface Props {
   contactPhone: string;
 }
@@ -18,6 +20,9 @@ export function SiteFooter({ contactPhone }: Props) {
             {contactPhone}
           </a>
         </p>
+        <div className="mt-3 flex justify-center">
+          <PoweredBy />
+        </div>
       </div>
     </footer>
   );
