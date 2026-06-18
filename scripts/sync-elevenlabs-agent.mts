@@ -55,6 +55,25 @@ const lookupTool = {
   },
 };
 
+// ---- client tool: end_call ------------------------------------------------
+// type:"client" → the browser widget handles it (VoiceAssistant schedules
+// endSession ~2s later so the agent's closing line finishes first). The agent
+// is instructed (system prompt Step 5) to say a brief goodbye, THEN call this.
+const endCallTool = {
+  type: 'client',
+  name: 'end_call',
+  description:
+    'End the conversation and hang up. Call this only after you have spoken a ' +
+    'brief closing line and the caller has no further questions. Takes no parameters.',
+  response_timeout_secs: 5,
+  expects_response: true,
+  parameters: {
+    type: 'object',
+    properties: {},
+    required: [],
+  },
+};
+
 const body = {
   name: 'Derby Aggs Delivery Assistant',
   conversation_config: {
@@ -65,7 +84,7 @@ const body = {
         prompt: agentConfig.system_prompt,
         llm: 'gpt-4o-mini',
         temperature: 0.3,
-        tools: [lookupTool],
+        tools: [lookupTool, endCallTool],
         knowledge_base: [
           {
             type: 'text',

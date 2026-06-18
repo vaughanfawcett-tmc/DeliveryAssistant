@@ -93,7 +93,9 @@ function VoiceAssistantInner({ agentId }: Props) {
         endTimerRef.current = setTimeout(() => {
           void endSessionRef.current?.();
         }, END_CALL_DELAY_MS);
-        return 'Ending the call now. Thanks for calling Derby Aggregates — goodbye.';
+        // Return empty so the agent's own closing line (spoken before it called
+        // end_call) is the goodbye — we don't want a second one read back.
+        return '';
       },
       // The agent calls this once it has captured + confirmed both fields.
       // IMPORTANT: return a plain, speech-ready SENTENCE — not raw JSON. The
