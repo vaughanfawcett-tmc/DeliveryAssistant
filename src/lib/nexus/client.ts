@@ -162,10 +162,18 @@ function mockLookup(searchTerm: string): NexusLookupResult {
     return { ok: false, error: 'nexus_unavailable' };
   }
 
+  // Format-tolerant match. The voice agent (speech → text) can hand us the
+  // consignment number with spaces, lower-case, or a missing dash — e.g.
+  // "pa 12345" or "PA12345" for "PA-12345". Normalise both sides to
+  // alphanumerics-only upper-case before comparing so a clean spoken number
+  // still resolves. (The real Pall-Ex API does its own server-side matching;
+  // this leniency only applies to the demo fixtures.)
+  const norm = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const term = norm(searchTerm);
   const matches = KNOWN_CONSIGNMENTS.filter(
     (c) =>
-      c.consignmentNumber.startsWith(searchTerm) ||
-      (c.customerReference !== null && c.customerReference === searchTerm),
+      norm(c.consignmentNumber).startsWith(term) ||
+      (c.customerReference !== null && norm(c.customerReference) === term),
   );
 
   if (matches.length === 0) {

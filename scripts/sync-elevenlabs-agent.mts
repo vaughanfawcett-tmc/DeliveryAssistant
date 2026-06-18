@@ -98,6 +98,17 @@ const body = {
     tts: {
       voice_id: VOICE_ID,
       model_id: 'eleven_turbo_v2',
+      optimize_streaming_latency: 4, // lowest latency — snappier replies
+      speed: 1.08, // slightly quicker delivery without sounding rushed
+    },
+    // Snappier turns + auto-hang-up on silence (the caller asked for both).
+    turn: {
+      turn_timeout: 6, // re-engage sooner if the caller goes quiet mid-turn
+      // End the call after ~12s of total silence (no caller audio at all).
+      silence_end_call_timeout: 12,
+    },
+    conversation: {
+      max_duration_seconds: 600,
     },
   },
   platform_settings: {
