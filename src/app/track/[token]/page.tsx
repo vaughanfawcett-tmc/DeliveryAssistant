@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { env } from '@/lib/env';
 import { verifyShareToken } from '@/lib/share/token';
 import { lookupForShare } from '@/lib/tracking/service';
 import { TrackingResult } from '@/components/TrackingResult';
+import { SiteHeader } from '@/components/SiteHeader';
+import { SiteFooter } from '@/components/SiteFooter';
 
 // No "use client" — Server Component.
 // The token in the URL contains only the HMAC-signed consignment number and
@@ -30,9 +33,13 @@ export default async function SharePage({ params }: Props) {
   if (!result.ok) notFound();
 
   return (
-    <main className="flex flex-1 flex-col items-center px-4 py-16">
-      {/* readOnly=true: no ShareBar rendered on the share page */}
-      <TrackingResult consignment={result.consignment} readOnly />
-    </main>
+    <>
+      <SiteHeader />
+      <main className="flex flex-1 flex-col items-center px-4 py-16">
+        {/* readOnly=true: no ShareBar rendered on the share page */}
+        <TrackingResult consignment={result.consignment} readOnly />
+      </main>
+      <SiteFooter contactPhone={env.CONTACT_PHONE} />
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/actions/auth';
+import { Logo } from '@/components/Logo';
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Metrics' },
@@ -35,9 +36,9 @@ export function AdminShell({ children }: Props) {
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      {/* Wordmark */}
+      {/* Brand logo */}
       <div className="px-4 py-6">
-        <span className="text-xl font-semibold text-zinc-900">Derby Aggregates</span>
+        <Logo href="/dashboard" height={32} />
       </div>
 
       {/* Nav */}
@@ -119,7 +120,7 @@ export function AdminShell({ children }: Props) {
               />
             </svg>
           </button>
-          <span className="text-base font-semibold text-zinc-900">Derby Aggregates</span>
+          <Logo href="/dashboard" height={28} />
         </header>
 
         {/* Page content */}
