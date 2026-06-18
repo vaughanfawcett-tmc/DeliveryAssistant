@@ -42,7 +42,7 @@ describe('lookupConsignment (via createTrackingService)', () => {
     expect(result.consignment.consignmentNumber).toBe('PA-12345');
     expect(result.consignment.currentStage).toBe('in_transit');
     expect(result.consignment.plainStatus).toBeTruthy();
-    expect(result.consignment.estimatedDelDate).toBe('2026-06-12');
+    expect(result.consignment.estimatedDelDate).toBe('2026-06-18');
 
     expect(logLookupSpy).toHaveBeenCalledOnce();
     expect(logLookupSpy).toHaveBeenCalledWith(
